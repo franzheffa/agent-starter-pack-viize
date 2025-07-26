@@ -1,19 +1,23 @@
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/agent-starter-pack-viize', '.']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/$PROJECT_ID/agent-starter-pack-viize']
+# Étape 1: Construit l'image avec Buildpacks (détecte Node.js automatiquement)
+- name: 'gcr.io/k8s-skaffold/pack'
+  entrypoint: 'pack'
+  args:
+    - 'build'
+    - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
+    - '--builder=gcr.io/buildpacks/builder:v1'
+
+# Étape 2: Déploie l'image sur Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
     - 'agent-starter-pack-viize'
-    - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize'
+    - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
     - '--region=europe-west1'
     - '--platform=managed'
     - '--allow-unauthenticated'
-images:
-- 'gcr.io/$PROJECT_ID/agent-starter-pack-viize'
+
 options:
   logging: CLOUD_LOGGING_ONLY
