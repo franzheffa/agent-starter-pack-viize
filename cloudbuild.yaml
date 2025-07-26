@@ -1,22 +1,19 @@
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/viize-agent-gemini', '.']
-  
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/viize-agent-gemini']
-
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud'
-    args:
-      [
-        'run', 'deploy', 'viize-agent-gemini',
-        '--image', 'gcr.io/$PROJECT_ID/viize-agent-gemini',
-        '--region', 'europe-west1',
-        '--platform', 'managed',
-        '--allow-unauthenticated'
-      ]
-
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/agent-starter-pack-viize', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/agent-starter-pack-viize']
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+    - 'run'
+    - 'deploy'
+    - 'agent-starter-pack-viize'
+    - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize'
+    - '--region=europe-west1'
+    - '--platform=managed'
+    - '--allow-unauthenticated'
 images:
-  - 'gcr.io/$PROJECT_ID/viize-agent-gemini'
-  options:
+- 'gcr.io/$PROJECT_ID/agent-starter-pack-viize'
+options:
   logging: CLOUD_LOGGING_ONLY
