@@ -1,11 +1,13 @@
 steps:
-# Étape 1: Construit l'image avec Buildpacks (détecte Node.js automatiquement)
+# Étape 1: Construit l'image avec Buildpacks en spécifiant Node.js 20
 - name: 'gcr.io/k8s-skaffold/pack'
   entrypoint: 'pack'
   args:
     - 'build'
     - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
     - '--builder=gcr.io/buildpacks/builder:v1'
+  env:
+    - 'GOOGLE_NODEJS_VERSION=20.x.x'
 
 # Étape 2: Déploie l'image sur Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
