@@ -1,8 +1,8 @@
 {
   "builds": [
     {
-      "src": "api/some-file.py",
-      "use": "@vercel/python@latest"
+      "src": "api/agent.ts",
+      "use": "@vercel/node@18.x"
     }
   ]
 }
