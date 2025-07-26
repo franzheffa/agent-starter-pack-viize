@@ -1,8 +1,1 @@
-{
-  "builds": [
-    {
-      "src": "api/agent.ts",
-      "use": "@vercel/node@latest"
-    }
-  ]
-}
+{}
