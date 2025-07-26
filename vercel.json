@@ -2,7 +2,7 @@
   "builds": [
     {
       "src": "api/agent.ts",
-      "use": "@vercel/node@18.x"
+      "use": "@vercel/node@latest"
     }
   ]
 }
