@@ -17,7 +17,7 @@ steps:
     - 'deploy'
     - 'agent-starter-pack-viize'
     - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
-    - '--region=europe-west1'
+    - '--region=us-central1'
     - '--platform=managed'
     - '--allow-unauthenticated'
 
