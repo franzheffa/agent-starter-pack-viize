@@ -1,13 +1,15 @@
 steps:
-# Étape 1: Construit l'image avec Buildpacks en spécifiant Node.js 20
+# Étape 1: Construit l'image avec Buildpacks en spécifiant Python 3.11
 - name: 'gcr.io/k8s-skaffold/pack'
   entrypoint: 'pack'
   args:
     - 'build'
     - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
     - '--builder=gcr.io/buildpacks/builder:v1'
+    - '--path=.' # Assurez-vous que l'application FastAPI est à la racine du dépôt, sinon ajustez (ex: '--path=app')
   env:
-    - 'GOOGLE_NODEJS_VERSION=20.x.x'
+    - 'GOOGLE_RUNTIME=python311'
+    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
 
 # Étape 2: Déploie l'image sur Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,12 +17,12 @@ steps:
   args:
     - 'run'
     - 'deploy'
-    - 'agent-starter-pack-viize'
+    - 'viize-backend' # Le nom du service Cloud Run existant que vous voulez mettre à jour
     - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
-    - '--region=us-central1'
+    - '--region=us-central1' # Région us-central1 pour la cohérence avec vos autres services
     - '--platform=managed'
     - '--allow-unauthenticated'
 
 options:
-  logging: CLOUD_LOGGING_ONLY'
+  logging: CLOUD_LOGGING_ONLY
   
