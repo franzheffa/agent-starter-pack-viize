@@ -6,21 +6,21 @@ steps:
     - 'build'
     - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
     - '--builder=gcr.io/buildpacks/builder:v1'
-    - '--path=.' # Le point de départ pour le Buildpack (souvent la racine)
-    - '--buildpack=gcr.io/buildpacks/google_cloud_buildpacks/python/setup:latest' # <-- AJOUTEZ CETTE LIGNE
+    - '--path=.' # Le point de départ pour le Buildpack (la racine du dépôt)
+    - '--buildpack=google.python.runtime' # CORRECTION: Utilise l'ID correct du Buildpack Python
   env:
     - 'GOOGLE_RUNTIME=python311'
     - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
 
-# Étape 2: Déploie l'image sur Cloud Run (pas de changement ici, c'est déjà bon)
+# Étape 2: Déploie l'image sur Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
-    - 'viize-backend'
+    - 'viize-backend' # Le nom du service Cloud Run existant que vous voulez mettre à jour
     - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
-    - '--region=us-central1'
+    - '--region=us-central1' # Région us-central1 pour la cohérence
     - '--platform=managed'
     - '--allow-unauthenticated'
 
