@@ -1,10 +1,10 @@
 steps:
-# Étape 1: Construit l'image avec Buildpacks Python et la pousse vers le DÉPÔT RÉEL
+# Étape 1: Construit l'image avec Buildpacks Python et la pousse vers le dépôt buttertech-docker en us-central1
 - name: 'gcr.io/k8s-skaffold/pack'
   entrypoint: 'pack'
   args:
     - 'build'
-    - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # <-- CHEMIN DE L'IMAGE CORRIGÉ POUR LE PUSH
+    - 'us-central1-docker.pkg.dev/$PROJECT_ID/buttertech-docker/agent-starter-pack-viize:$COMMIT_SHA' # <-- MODIFIÉ : Pousse vers buttertech-docker en us-central1
     - '--builder=gcr.io/buildpacks/builder:v1'
     - '--path=src/deployment_targets/cloud_run'
     - '--buildpack=google.python.runtime'
@@ -12,18 +12,17 @@ steps:
     - 'GOOGLE_RUNTIME=python311'
     - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
 
-# Étape 2: Déploie l'image sur Cloud Run (en utilisant le CHEMIN RÉEL de l'image)
+# Étape 2: Déploie l'image sur Cloud Run (en utilisant le CHEMIN VERS buttertech-docker)
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
     - 'agent-starter-pack-viize' # Nom du service Cloud Run
-    - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # <-- UTILISE LE MÊME CHEMIN CORRIGÉ
+    - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/buttertech-docker/agent-starter-pack-viize:$COMMIT_SHA' # <-- MODIFIÉ : Tire l'image depuis buttertech-docker
     - '--region=us-central1' # Région du déploiement
     - '--platform=managed'
     - '--allow-unauthenticated'
     - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com' # Utilise le compte de service dédié
 options:
-  logging: CLOUD_LOGGING_ONLY
-  
+  logging: CLOUD_LOGGING_ONLY  
