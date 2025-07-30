@@ -1,10 +1,10 @@
 steps:
-# Étape 1: Construit l'image avec Buildpacks Python et la pousse sous le nom viize-agent-gemini
+# Étape 1: Construit l'image (elle continuera probablement à aller en europe-west1)
 - name: 'gcr.io/k8s-skaffold/pack'
   entrypoint: 'pack'
   args:
     - 'build'
-    - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/viize-agent-gemini:$COMMIT_SHA' # <-- MODIFIÉ ICI : NOM DE L'IMAGE = viize-agent-gemini
+    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # <-- MODIFIÉ ICI : Indique où l'image EST poussée par défaut (europe-west1)
     - '--builder=gcr.io/buildpacks/builder:v1'
     - '--path=src/deployment_targets/cloud_run'
     - '--buildpack=google.python.runtime'
@@ -12,17 +12,17 @@ steps:
     - 'GOOGLE_RUNTIME=python311'
     - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
 
-# Étape 2: Déploie l'image sur Cloud Run (en ciblant le service viize-agent-gemini)
+# Étape 2: Déploie l'image sur Cloud Run (dans la même région que l'image !)
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
-    - 'viize-agent-gemini' # <-- MODIFIÉ ICI : NOM DU SERVICE CLOUD RUN = viize-agent-gemini
-    - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/viize-agent-gemini:$COMMIT_SHA' # <-- UTILISE LE MÊME NOM D'IMAGE
-    - '--region=us-central1'
+    - 'agent-starter-pack-viize' # Nom du service Cloud Run
+    - '--image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # <-- UTILISE LE MÊME CHEMIN ET RÉGION DE L'IMAGE EXISTANTE
+    - '--region=europe-west1' # <-- MODIFIÉ ICI : Déploie le service en europe-west1
     - '--platform=managed'
     - '--allow-unauthenticated'
-    - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com' # Utilisez le SA dédié
+    - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com' # Utilisez le compte de service dédié
 options:
   logging: CLOUD_LOGGING_ONLY
