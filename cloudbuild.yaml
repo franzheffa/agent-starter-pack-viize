@@ -4,26 +4,26 @@ steps:
   entrypoint: 'pack'
   args:
     - 'build'
-    - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:$COMMIT_SHA' # <-- MODIFIÉ ICI
+    - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:$COMMIT_SHA'
     - '--builder=gcr.io/buildpacks/builder:v1'
-    - '--path=src/deployment_targets/cloud_run'
-    - '--buildpack=google.python.runtime'
+    - '--path=src/deployment_targets/cloud_run' # Chemin vers le contexte de l'application FastAPI
+    - '--buildpack=google.python.runtime' # Force l'utilisation du Buildpack Python
   env:
     - 'GOOGLE_RUNTIME=python311'
-    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
+    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080' # Point d'entrée de l'application FastAPI
 
-# Étape 2: Déploie l'image sur Cloud Run (en utilisant le tag spécifique)
+# Étape 2: Déploie l'image sur Cloud Run (en utilisant le tag spécifique et le nouveau compte de service)
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
-    - 'agent-starter-pack-viize'
-    - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:$COMMIT_SHA' # <-- MODIFIÉ ICI
-    - '--region=us-central1'
+    - 'agent-starter-pack-viize' # Nom du service Cloud Run
+    - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:$COMMIT_SHA'
+    - '--region=us-central1' # Région du déploiement
     - '--platform=managed'
-    - '--allow-unauthenticated'
-
+    - '--allow-unauthenticated' # Permet l'accès public au service
+    - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com' # Utilise le compte de service dédié
 options:
   logging: CLOUD_LOGGING_ONLY
   
