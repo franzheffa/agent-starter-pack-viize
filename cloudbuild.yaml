@@ -1,28 +1,28 @@
 steps:
-# Étape 1: Construit l'image avec Buildpacks Python 3.11 avec un tag spécifique (ID du commit)
+# Étape 1: Construit l'image avec Buildpacks Python et la pousse vers le DÉPÔT RÉEL
 - name: 'gcr.io/k8s-skaffold/pack'
   entrypoint: 'pack'
   args:
     - 'build'
-    - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:$COMMIT_SHA'
+    - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # <-- CHEMIN DE L'IMAGE CORRIGÉ POUR LE PUSH
     - '--builder=gcr.io/buildpacks/builder:v1'
-    - '--path=src/deployment_targets/cloud_run' # Chemin vers le contexte de l'application FastAPI
-    - '--buildpack=google.python.runtime' # Force l'utilisation du Buildpack Python
+    - '--path=src/deployment_targets/cloud_run'
+    - '--buildpack=google.python.runtime'
   env:
     - 'GOOGLE_RUNTIME=python311'
-    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080' # Point d'entrée de l'application FastAPI
+    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
 
-# Étape 2: Déploie l'image sur Cloud Run (en utilisant le tag spécifique et le nouveau compte de service)
+# Étape 2: Déploie l'image sur Cloud Run (en utilisant le CHEMIN RÉEL de l'image)
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
     - 'agent-starter-pack-viize' # Nom du service Cloud Run
-    - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:$COMMIT_SHA'
+    - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # <-- UTILISE LE MÊME CHEMIN CORRIGÉ
     - '--region=us-central1' # Région du déploiement
     - '--platform=managed'
-    - '--allow-unauthenticated' # Permet l'accès public au service
+    - '--allow-unauthenticated'
     - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com' # Utilise le compte de service dédié
 options:
   logging: CLOUD_LOGGING_ONLY
