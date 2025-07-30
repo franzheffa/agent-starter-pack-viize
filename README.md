@@ -131,7 +131,7 @@ For other types of feedback, or if you'd like to share a positive experience or 
 
 Thank you for your contributions!
 
-## Disclaimer
+## Disclaimer.
 
 This repository is for demonstrative purposes only and is not an officially supported Google product .
 
