@@ -6,7 +6,7 @@
       media="(prefers-color-scheme: dark)"
       srcset="https://cdn.firebasestudio.dev/btn/try_light_20.svg">
     <source
-      media="(prefers-color-scheme: light)"
+      media="(prefers-color-scheme: light)".
       srcset="https://cdn.firebasestudio.dev/btn/try_dark_20.svg">
     <img
       height="20"
