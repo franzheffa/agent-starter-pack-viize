@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/pypi/v/agent-starter-pack?color=blue) [![1-Minute Video Overview](https://img.shields.io/badge/1--Minute%20Overview-gray)](https://youtu.be/jHt-ZVD660g) [![Docs](https://img.shields.io/badge/Documentation-gray)](https://googlecloudplatform.github.io/agent-starter-pack/) <a href="https://studio.firebase.google.com/new?template=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fagent-starter-pack%2Ftree%2Fmain%2Fsrc%2Fresources%2Fidx">
   <picture>
     <source
-      media="(prefers-color-scheme: dark)"
+      media="(prefers-color-scheme: dark)".
       srcset="https://cdn.firebasestudio.dev/btn/try_light_20.svg">
     <source
       media="(prefers-color-scheme: light)".
