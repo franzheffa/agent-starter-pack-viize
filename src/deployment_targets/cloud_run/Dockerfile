@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#       http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +18,10 @@ RUN pip install --no-cache-dir uv==0.6.12
 
 WORKDIR /code
 
-COPY ./pyproject.toml ./README.md ./uv.lock* ./
+# COPY des fichiers de dépendances de la racine du dépôt (contexte de build) vers le WORKDIR
+COPY ./pyproject.toml ./README.md ./uv.lock ./
 
+# COPY du dossier 'app' depuis la racine du dépôt
 COPY ./app ./app
 
 RUN uv sync --frozen
