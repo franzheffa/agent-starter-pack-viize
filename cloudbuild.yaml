@@ -1,16 +1,16 @@
 steps:
-# Étape 1: Construit l'image avec Buildpacks Python et la pousse vers cloud-run-source-deploy en EUROPE-WEST1
+# Étape 1: Construit l'image avec Buildpacks Python et la pousse vers Artifact Registry
 - name: 'gcr.io/k8s-skaffold/pack'
   entrypoint: 'pack'
   args:
     - 'build'
-    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # Pousse l'image dans le dépôt et la région où elle est trouvée
+    - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA'
     - '--builder=gcr.io/buildpacks/builder:v1'
-    - '--path=src/deployment_targets/cloud_run' # Chemin correct vers le code de l'application FastAPI
+    - '--path=src/deployment_targets/cloud_run'
     - '--buildpack=google.python.runtime'
   env:
     - 'GOOGLE_RUNTIME=python311'
-    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080' # Point d'entrée de l'application FastAPI
+    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
 
 # Étape 2: Déploie l'image sur Cloud Run (en utilisant le CHEMIN et RÉGION CORRIGÉS de l'image)
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -18,11 +18,12 @@ steps:
   args:
     - 'run'
     - 'deploy'
-    - 'agent-starter-pack-viize' # Nom du service Cloud Run
-    - '--image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA' # Tire l'image depuis le dépôt et la région où elle est poussée
-    - '--region=europe-west1' # Déploie le service dans la même région que l'image
+    - 'agent-starter-pack-viize'
+    - '--image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA'
+    - '--region=europe-west1'
     - '--platform=managed'
     - '--allow-unauthenticated'
-    - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com' # Utilise le compte de service dédié
+    - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com'
+
 options:
   logging: CLOUD_LOGGING_ONLY
