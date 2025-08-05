@@ -3,10 +3,10 @@
 ![Version](https://img.shields.io/pypi/v/agent-starter-pack?color=blue) [![1-Minute Video Overview](https://img.shields.io/badge/1--Minute%20Overview-gray)](https://youtu.be/jHt-ZVD660g) [![Docs](https://img.shields.io/badge/Documentation-gray)](https://googlecloudplatform.github.io/agent-starter-pack/) <a href="https://studio.firebase.google.com/new?template=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fagent-starter-pack%2Ftree%2Fmain%2Fsrc%2Fresources%2Fidx">
   <picture>
     <source
-      media="(prefers-color-scheme: dark)"
+      media="(prefers-color-scheme: dark)".
       srcset="https://cdn.firebasestudio.dev/btn/try_light_20.svg">
     <source
-      media="(prefers-color-scheme: light)"
+      media="(prefers-color-scheme: light)".
       srcset="https://cdn.firebasestudio.dev/btn/try_dark_20.svg">
     <img
       height="20"
@@ -19,9 +19,9 @@
 The `agent-starter-pack` is a collection of production-ready Generative AI Agent templates built for Google Cloud. <br>
 It accelerates development by providing a holistic, production-ready solution, addressing common challenges (Deployment & Operations, Evaluation, Customization, Observability) in building and deploying GenAI agents.
 
-| ⚡️ Launch | 🧪 Experiment  | ✅ Deploy | 🛠️ Customize |
+| ⚡️ Launch | 🧪 Experiment  | ✅ Deploy | 🛠️ Customize|
 |---|---|---|---|
-| [Pre-built agent templates](./agents/) (ReAct, RAG, multi-agent, Live API). | [Vertex AI evaluation](https://cloud.google.com/vertex-ai/generative-ai/docs/models/evaluation-overview) and an interactive playground. | Production-ready infra with [monitoring, observability](https://googlecloudplatform.github.io/agent-starter-pack/guide/observability), and [CI/CD](https://googlecloudplatform.github.io/agent-starter-pack/guide/deployment) on [Cloud Run](https://cloud.google.com/run) or [Agent Engine](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/overview). | Extend and customize templates according to your needs. |
+| [Pre-built agent templates](./agents/) (ReAct, RAG, multi-agent, Live API).| [Vertex AI evaluation](https://cloud.google.com/vertex-ai/generative-ai/docs/models/evaluation-overview) and an interactive playground. | Production-ready infra with [monitoring, observability](https://googlecloudplatform.github.io/agent-starter-pack/guide/observability), and [CI/CD](https://googlecloudplatform.github.io/agent-starter-pack/guide/deployment) on [Cloud Run](https://cloud.google.com/run) or [Agent Engine](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/overview). | Extend and customize templates according to your needs. |
 
 ---
  
@@ -131,7 +131,7 @@ For other types of feedback, or if you'd like to share a positive experience or 
 
 Thank you for your contributions!
 
-## Disclaimer
+## Disclaimer.
 
 This repository is for demonstrative purposes only and is not an officially supported Google product .
 

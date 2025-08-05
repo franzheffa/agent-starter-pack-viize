@@ -1,29 +1,31 @@
 steps:
-# Étape 1: Construit l'image avec Buildpacks Python 3.11 depuis le dossier correct
-- name: 'gcr.io/k8s-skaffold/pack'
-  entrypoint: 'pack'
-  args:
-    - 'build'
-    - 'gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
-    - '--builder=gcr.io/buildpacks/builder:v1'
-    - '--path=src/deployment_targets/cloud_run' # <--- LE CHEMIN CORRIGÉ DE L'APPLICATION BACKEND
-    - '--buildpack=google.python.runtime'
-  env:
-    - 'GOOGLE_RUNTIME=python311'
-    - 'GOOGLE_ENTRYPOINT=uvicorn app.server:app --host 0.0.0.0 --port 8080'
+# Étape 1: Construire l'image Docker
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'build',
+    '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA',
+    'src/deployment_targets/cloud_run'
+  ]
 
-# Étape 2: Déploie l'image sur Cloud Run
+# Étape 2: Pousser l'image vers Artifact Registry (uniquement si l'étape 1 a réussi)
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'push',
+    'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA'
+  ]
+
+# Étape 3: Déployer l'image sur Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
-    - 'agent-starter-pack-viize' # Le nom du service Cloud Run que vous voulez déployer/mettre à jour
-    - '--image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest'
-    - '--region=us-central1' # Région us-central1
+    - 'agent-starter-pack-viize'
+    - '--image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA'
+    - '--region=europe-west1'
     - '--platform=managed'
     - '--allow-unauthenticated'
+    - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com'
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  
