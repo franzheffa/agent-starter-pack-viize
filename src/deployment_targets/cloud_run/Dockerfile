@@ -1,40 +1,14 @@
-FROM nvcr.io/nvidia/base/ubuntu:jammy-20250415.1
+FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y \
-    curl \
-    gnupg2 \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /code
 
-# Copy license information
-RUN mkdir -p /legal
-COPY LICENSE-3rd-party.txt /legal/
+COPY ./pyproject.toml ./README.md ./uv.lock ./
+COPY ./app ./app
 
-WORKDIR /app
+RUN pip install --no-cache-dir uvicorn && \
+    pip install --no-cache-dir ".[all]" || true && \
+    uv sync --frozen
 
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
-    apt-get install -y nodejs
-
-RUN node -v && npm -v
-
-ARG NEXT_PUBLIC_MODEL_NAME
-ARG NEXT_PUBLIC_EMBEDDING_MODEL
-ARG NEXT_PUBLIC_RERANKER_MODEL
-ARG NEXT_PUBLIC_CHAT_BASE_URL
-ARG NEXT_PUBLIC_VDB_BASE_URL
-
-ENV NEXT_PUBLIC_MODEL_NAME=${NEXT_PUBLIC_MODEL_NAME}
-ENV NEXT_PUBLIC_EMBEDDING_MODEL=${NEXT_PUBLIC_EMBEDDING_MODEL}
-ENV NEXT_PUBLIC_RERANKER_MODEL=${NEXT_PUBLIC_RERANKER_MODEL}
-ENV NEXT_PUBLIC_CHAT_BASE_URL=${NEXT_PUBLIC_CHAT_BASE_URL}
-ENV NEXT_PUBLIC_VDB_BASE_URL=${NEXT_PUBLIC_VDB_BASE_URL}
-
-COPY . /app
-
-RUN npm install
-
-RUN npm run build
-
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8080"]
