@@ -1,18 +1,31 @@
-cat << 'EOF' > Dockerfile
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 FROM python:3.11-slim
 
-WORKDIR /app
+RUN pip install --no-cache-dir uv==0.6.12
 
-COPY pyproject.toml uv.lock README.md ./
-COPY app ./app
+WORKDIR /code
 
-# Installer les dépendances
-RUN pip install --no-cache-dir uvicorn && \
-    pip install --no-cache-dir -e . && \
-    uv sync --frozen
+# COPY des fichiers de dépendances de la racine du dépôt (contexte de build) vers le WORKDIR
+COPY ./pyproject.toml ./README.md ./uv.lock ./
 
-EXPOSE 8080
+# L'instruction COPY a été corrigée pour pointer vers le dossier 'app' à la racine du contexte de build
+COPY ./app ./app
 
-CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8080"]
-EOF
+RUN uv sync --frozen
 
+EXPOSE 3000
+
+CMD ["uv", "run", "uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8080"]
