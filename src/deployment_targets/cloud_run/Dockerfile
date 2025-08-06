@@ -37,4 +37,4 @@ RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8080"]
