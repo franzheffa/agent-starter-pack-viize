@@ -12,20 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.11-slim
+FROM nvcr.io/nvidia/base/ubuntu:jammy-20250415.1
 
-RUN pip install --no-cache-dir uv==0.6.12
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /code
+# Copy license information
+RUN mkdir -p /legal
+COPY LICENSE-3rd-party.txt /legal/
 
-# COPY des fichiers de dépendances de la racine du dépôt (contexte de build) vers le WORKDIR
-COPY ./pyproject.toml ./README.md ./uv.lock ./
+WORKDIR /app
 
-# L'instruction COPY a été corrigée pour pointer vers le dossier 'app' à la racine du contexte de build
-COPY ./app ./app
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
+    apt-get install -y nodejs
 
-RUN uv sync --frozen
+RUN node -v && npm -v
+
+ARG NEXT_PUBLIC_MODEL_NAME
+ARG NEXT_PUBLIC_EMBEDDING_MODEL
+ARG NEXT_PUBLIC_RERANKER_MODEL
+ARG NEXT_PUBLIC_CHAT_BASE_URL
+ARG NEXT_PUBLIC_VDB_BASE_URL
+
+ENV NEXT_PUBLIC_MODEL_NAME=${NEXT_PUBLIC_MODEL_NAME}
+ENV NEXT_PUBLIC_EMBEDDING_MODEL=${NEXT_PUBLIC_EMBEDDING_MODEL}
+ENV NEXT_PUBLIC_RERANKER_MODEL=${NEXT_PUBLIC_RERANKER_MODEL}
+ENV NEXT_PUBLIC_CHAT_BASE_URL=${NEXT_PUBLIC_CHAT_BASE_URL}
+ENV NEXT_PUBLIC_VDB_BASE_URL=${NEXT_PUBLIC_VDB_BASE_URL}
+
+COPY . /app
+
+RUN npm install
+
+RUN npm run build
 
 EXPOSE 3000
 
-CMD ["uv", "run", "uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["npm", "run", "start"]
