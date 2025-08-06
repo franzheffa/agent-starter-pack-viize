@@ -21,7 +21,7 @@ WORKDIR /code
 # COPY des fichiers de dépendances de la racine du dépôt (contexte de build) vers le WORKDIR
 COPY ./pyproject.toml ./README.md ./uv.lock ./
 
-# L'instruction COPY a été corrigée pour pointer vers le dossier 'app' à la racine du contexte de build
+# L'instruction COPY est corrigée pour trouver le dossier 'app' à la racine du dépôt
 COPY ./app ./app
 
 RUN uv sync --frozen
