@@ -1,23 +1,21 @@
 steps:
-# Step 1: Build the Docker image and push it to Artifact Registry
-# This uses the root of the repository as the build context
-# to ensure that files like pyproject.toml are found.
+# Étape 1: Construire l'image Docker avec le contexte de build à la racine du dépôt
 - name: 'gcr.io/cloud-builders/docker'
   args: [
     'build',
     '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA',
-    '.', # Build context is the repository root
-    '-f', 'src/deployment_targets/cloud_run/Dockerfile' # Specifies the Dockerfile path
+    '.', # Le point '.' indique que le contexte de build est la racine du dépôt
+    '-f', 'src/deployment_targets/cloud_run/Dockerfile' # Spécifie le chemin relatif du Dockerfile depuis la racine
   ]
 
-# Step 2: Push the image to Artifact Registry (explicitly)
+# Étape 2: Pousser l'image vers Artifact Registry (uniquement si l'étape 1 a réussi)
 - name: 'gcr.io/cloud-builders/docker'
   args: [
     'push',
     'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA'
   ]
 
-# Step 3: Deploy the image to Cloud Run
+# Étape 3: Déployer l'image sur Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
