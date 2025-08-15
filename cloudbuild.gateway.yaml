@@ -17,13 +17,11 @@ steps:
     - --region=$_REGION
     - --allow-unauthenticated
     - --platform=managed
-    - --set-env-vars=GATEWAY_BACKEND_ECHO_URL=$_ECHO_URL
 images:
 - gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}
 - gcr.io/$PROJECT_ID/agent-gateway:latest
 substitutions:
   _SERVICE: agent-gateway
   _REGION: europe-west1
-  _ECHO_URL: ""
 options:
   logging: CLOUD_LOGGING_ONLY
