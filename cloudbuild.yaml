@@ -18,6 +18,7 @@ steps:
     - --region=europe-west1
     - --allow-unauthenticated
     - --platform=managed
+    - --set-env-vars=APP_MODULE=app.server:app
 images:
 - gcr.io/$PROJECT_ID/agent-starter-pack-viize:${BUILD_ID}
 - gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest
