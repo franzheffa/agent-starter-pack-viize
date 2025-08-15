@@ -1,52 +1,52 @@
-from fastapi import FastAPI, HTTPException
+import os, requests
+from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import Optional
-import os
-
-# Vertex AI (Gemini)
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part
-import requests
 
-app = FastAPI(title="Agent Gateway")
+app = FastAPI()
 
-class EchoIn(BaseModel):
-    text: Optional[str] = None
-    message: Optional[str] = None
-
-class GeminiIn(BaseModel):
-    prompt: str
-    imageUrl: Optional[str] = None
-
-def _init_vertex():
-    project = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("PROJECT_ID")
-    if not project:
-        raise RuntimeError("No GCP project in env (GOOGLE_CLOUD_PROJECT/PROJECT_ID)")
-    location = os.environ.get("VERTEX_LOCATION", "europe-west1")
-    vertexai.init(project=project, location=location)
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
-    return GenerativeModel(model_name)
+PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
+LOCATION = os.getenv("VERTEX_LOCATION", "europe-west1")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+ECHO_URL = os.getenv("GATEWAY_BACKEND_ECHO_URL")
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "agent-gateway", "agents": {"echo": True, "gemini": True}}
+    return {
+        "status": "ok",
+        "service": "agent-gateway",
+        "agents": {"echo": True, "gemini": True},
+        "project": PROJECT, "location": LOCATION, "model": MODEL
+    }
+
+class EchoReq(BaseModel):
+    text: str = ""
 
 @app.post("/agents/echo")
-def echo(body: EchoIn):
-    txt = body.text or body.message or ""
-    return {"reply": f"Echo: {txt}"}
+def echo(req: EchoReq):
+    return {"reply": f"Echo: {req.text}"}
+
+class GeminiReq(BaseModel):
+    prompt: str
+    imageUrl: str | None = None
 
 @app.post("/agents/gemini")
-def gemini(body: GeminiIn):
-    try:
-        model = _init_vertex()
-        parts = [body.prompt]
-        if body.imageUrl:
-            r = requests.get(body.imageUrl, timeout=10)
-            r.raise_for_status()
-            mime = (r.headers.get("content-type") or "image/jpeg").split(";")[0]
-            parts.append(Part.from_data(mime_type=mime, data=r.content))
-        resp = model.generate_content(parts)
-        return {"ok": True, "from": "gateway", "model": model.model_name, "text": resp.text}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def gemini(req: GeminiReq):
+    if not PROJECT:
+        return {"ok": False, "from": "gateway", "status": 500, "detail": "GOOGLE_CLOUD_PROJECT not set"}
+    vertexai.init(project=PROJECT, location=LOCATION)
+    model = GenerativeModel(MODEL)
+
+    parts: list = [req.prompt]
+    if req.imageUrl:
+        r = requests.get(req.imageUrl, timeout=10)
+        r.raise_for_status()
+        mime = r.headers.get("content-type", "image/jpeg").split(";")[0]
+        parts.append(Part.from_bytes(r.content, mime_type=mime))
+
+    resp = model.generate_content(parts)
+    out = getattr(resp, "text", None)
+    if out is None and getattr(resp, "candidates", None):
+        out = "".join(getattr(p, "text", "") for p in resp.candidates[0].content.parts)
+    return {"ok": True, "text": out}

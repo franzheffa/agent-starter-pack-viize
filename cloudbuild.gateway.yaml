@@ -1,10 +1,8 @@
 steps:
 - name: gcr.io/cloud-builders/docker
-  args: ['build',
-         '-f','Dockerfile.gateway',
+  args: ['build','-f','Dockerfile.gateway',
          '-t','gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}',
-         '-t','gcr.io/$PROJECT_ID/agent-gateway:latest',
-         '.']
+         '-t','gcr.io/$PROJECT_ID/agent-gateway:latest','.']
 - name: gcr.io/cloud-builders/docker
   args: ['push','gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}']
 - name: gcr.io/cloud-builders/docker
@@ -14,14 +12,18 @@ steps:
   args:
     - run
     - deploy
-    - agent-gateway
+    - $_SERVICE
     - --image=gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}
-    - --region=europe-west1
+    - --region=$_REGION
     - --allow-unauthenticated
     - --platform=managed
-    - --set-env-vars=ECHO_URL=${_ECHO_URL}
+    - --set-env-vars=GATEWAY_BACKEND_ECHO_URL=$_ECHO_URL
 images:
 - gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}
 - gcr.io/$PROJECT_ID/agent-gateway:latest
+substitutions:
+  _SERVICE: agent-gateway
+  _REGION: europe-west1
+  _ECHO_URL: ""
 options:
   logging: CLOUD_LOGGING_ONLY
