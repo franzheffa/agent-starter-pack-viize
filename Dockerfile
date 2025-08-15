@@ -11,13 +11,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Copie du code
 COPY . /app
 
-# Dépendances Python
+# >>> Le point clé: installer fastapi <<<
 RUN python -m pip install --upgrade pip && \
-    pip install --no-cache-dir uvicorn && \
+    pip install --no-cache-dir fastapi uvicorn && \
     pip install --no-cache-dir .
 
 EXPOSE 8080
-CMD ["sh","-lc","uvicorn ${APP_MODULE} --host 0.0.0.0 --port ${PORT}"]
+# On enlève toute ambiguïté côté Cloud Run/ENV
+CMD ["uvicorn","app.server:app","--host","0.0.0.0","--port","8080"]
