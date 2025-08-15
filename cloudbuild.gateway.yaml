@@ -1,27 +1,30 @@
 steps:
-- name: gcr.io/cloud-builders/docker
-  args: ['build','-f','Dockerfile.gateway',
-         '-t','gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}',
-         '-t','gcr.io/$PROJECT_ID/agent-gateway:latest','.']
-- name: gcr.io/cloud-builders/docker
-  args: ['push','gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}']
-- name: gcr.io/cloud-builders/docker
-  args: ['push','gcr.io/$PROJECT_ID/agent-gateway:latest']
-- name: gcr.io/google.com/cloudsdktool/cloud-sdk
-  entrypoint: gcloud
-  args:
-    - run
-    - deploy
-    - $_SERVICE
-    - --image=gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}
-    - --region=$_REGION
-    - --allow-unauthenticated
-    - --platform=managed
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '-f'
+      - Dockerfile.gateway
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE}:${BUILD_ID}'
+      - '--build-arg'
+      - 'ECHO_URL=${_ECHO_URL}'
+      - .
+    env:
+      - 'ECHO_URL=${_ECHO_URL}'
+  - name: gcr.io/cloud-builders/docker
+    args: ['push','gcr.io/$PROJECT_ID/${_SERVICE}:${BUILD_ID}']
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - '--image=gcr.io/$PROJECT_ID/${_SERVICE}:${BUILD_ID}'
+      - '--region=${_REGION}'
+      - '--allow-unauthenticated'
 images:
-- gcr.io/$PROJECT_ID/agent-gateway:${BUILD_ID}
-- gcr.io/$PROJECT_ID/agent-gateway:latest
+  - 'gcr.io/$PROJECT_ID/${_SERVICE}:${BUILD_ID}'
 substitutions:
   _SERVICE: agent-gateway
   _REGION: europe-west1
-options:
-  logging: CLOUD_LOGGING_ONLY
+  _ECHO_URL: ''
