@@ -1,12 +1,6 @@
 {
   "version": 2,
   "env": {
-    "NEXT_PUBLIC_API_BASE_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app"
-  },
-  "routes": [
-    { "src": "/api/agents/echo", "dest": "/api/agents/echo.js" },
-    { "src": "/api/agents/gemini", "dest": "/api/agents/gemini.js" },
-    { "src": "/api/health", "dest": "/api/health.js" },
-    { "src": "/", "dest": "/public/index.html" }
-  ]
+    "NEXT_PUBLIC_API_BASE_URL": "https://agent-gateway-112329442315.europe-west1.run.app"
+  }
 }

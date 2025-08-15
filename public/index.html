@@ -1,71 +1,83 @@
-<!DOCTYPE html><html lang="fr"><head>
+<!doctype html><html lang="fr"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Buttertech — passerelle d'agents IA</title>
+<link rel="stylesheet" href="/brand.css"/>
 <link rel="icon" href="/favicon.ico"/>
-<style>
-:root{--bg:#0b0f16;--card:#141a23;--muted:#9fb3c8;--fg:#e6eef6;--accent:#7cd4ff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto}
-.container{max-width:980px;margin:48px auto;padding:0 16px}
-.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#073b28;color:#99ffd5;border:1px solid #1e5; font-weight:600}
-.card{background:var(--card);border:1px solid #223045;border-radius:16px;padding:18px 18px;margin:14px 0}
-h1{font-size:40px;margin:10px 0 6px} h2{margin:0 0 10px}
-.row{display:flex;gap:10px;align-items:center}
-input[type=text]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #2a3a50;background:#0f141c;color:var(--fg)}
-button{padding:10px 14px;border-radius:10px;border:1px solid #2a3a50;background:#0f7;cursor:pointer;font-weight:600}
-label{color:var(--muted);font-size:14px}
-pre{white-space:pre-wrap;background:#0d121a;border:1px solid #243244;border-radius:10px;padding:12px;color:#bbd1e7}
-a{color:var(--accent)} small{color:var(--muted)}
-</style></head><body><div class="container">
-<span class="badge">✅ En ligne : Front Vercel → Gateway Cloud Run</span>
-<h1>Buttertech — passerelle d'agents IA</h1>
-<p>Vérifs rapides : <a href="/api/health" target="_blank">/api/health</a> → doit afficher <code>{ ok: true }</code></p>
-
-<div class="card">
-  <h2>Tester l'agent d'écho via proxy</h2>
-  <div class="row">
-    <input id="echoText" type="text" placeholder="Bonjour">
-    <button id="echoBtn">Envoyer</button>
+<style>.hero{padding-top:24px;padding-bottom:18px}.pill{display:inline-flex;gap:8px;align-items:center;background:#09150c;border:1px solid #17301c;color:#b6f7b6;padding:6px 10px;border-radius:999px}</style>
+</head><body>
+<div class="container">
+  <div class="nav">
+    <img class="logo" src="/assets/buttertech-logo.svg" alt="Buttertech"/>
+    <a href="/">Accueil</a>
+    <a href="/demo">Démo</a>
+    <a href="/docs">Docs API</a>
+    <a href="/produits">Produits</a>
+    <a href="/equipe">Équipe</a>
+    <a href="/contact">Contact</a>
   </div>
-  <pre id="echoOut"></pre>
-</div>
 
-<div class="card">
-  <h2>Tester Gemini (texte + image URL optionnelle + voix)</h2>
-  <div style="display:grid;gap:10px">
-    <input id="gPrompt" type="text" placeholder="Donne-moi un haïku sur le code.">
-    <input id="gImg" type="text" placeholder="https://exemple/image.jpg (optionnel)">
-    <label><input id="gSpeak" type="checkbox"> Lire la réponse (MP3)</label>
-    <button id="gBtn">Générer</button>
+  <section class="hero">
+    <span class="badge">✅ En ligne · Front Vercel + Gateway Cloud Run</span>
+    <h1>Buttertech – passerelle d’agents IA pour l’entreprise</h1>
+    <p class="lead">Plateforme d’agents IA spécialisés (recherche, RAG, automatisation) orchestrés derrière un <b>API Gateway</b> (Cloud Run), avec un front léger (Vercel). Objectif : <b>fiabilité</b>, <b>observabilité</b>, <b>isolation</b> par agent.</p>
+    <p>
+      <a class="btn gold" href="/demo">Voir la démo</a>
+      <a class="btn" href="/api/health">/api/health</a>
+      <a class="btn" href="/gateway/health">/gateway/health</a>
+    </p>
+  </section>
+
+  <div class="grid grid-2">
+    <div class="card"><h2>Ce que nous faisons</h2>
+      <ul>
+        <li>Gateway <b>FastAPI</b> qui proxifie des agents isolés : <code>/agents/&lt;nom&gt;</code></li>
+        <li>Agents unitaires (ex. <code>echo</code>, <code>gemini</code>) packagés & déployés indépendamment</li>
+        <li>Front minimal (Vercel Functions + static) pour tests & intégrations rapides</li>
+        <li>Observabilité (logs Cloud Run & Vercel), sécurité par service account & env par agent</li>
+      </ul>
+    </div>
+    <div class="card"><h2>Problèmes résolus</h2>
+      <ul>
+        <li>Éviter les conflits entre agents via <b>isolation</b></li>
+        <li>Réduire le time-to-prod : build & deploy en 1 commande (Cloud Build)</li>
+        <li>Offrir une <b>surface API stable</b> pour intégrations web & internes</li>
+      </ul>
+    </div>
+    <div class="card"><h2>Produits (état actuel)</h2>
+      <ul>
+        <li>Agent Gateway (Cloud Run) — routes : <code>/agents/echo</code>, <code>/agents/gemini</code></li>
+        <li>Agent “Gemini” — génération texte + image (Vertex AI, <code>gemini-2.x</code>)</li>
+        <li>Voix — synthèse via Cloud Text-to-Speech</li>
+      </ul>
+      <p><b>Statut :</b> en ligne · démos publiques</p>
+    </div>
+    <div class="card"><h2>Clients cibles</h2>
+      <ul>
+        <li>PME/ETI qui veulent <b>piloter des agents IA sûrs & auditables</b></li>
+        <li>Équipes data/innovation : prototyper → produire en quelques jours</li>
+      </ul>
+      <div style="margin-top:8px"><span class="pill">B2B SaaS</span> <span class="pill">API-first</span> <span class="pill">Cloud-native</span></div>
+    </div>
   </div>
-  <pre id="gOut"></pre>
-  <audio id="gAudio" controls style="width:100%;display:none"></audio>
-  <small>Modèle : <code>gemini-2.5-flash</code> (Pro dispo côté gateway)</small>
-</div>
 
+  <hr/>
+  <div class="grid grid-2">
+    <div class="card"><h2>Équipe</h2>
+      <p><b>Franz Heffa</b> — fondateur & ingénierie produit. Expérience : apps cloud, stacks IA, déploiements prod GCP & Vercel.</p>
+      <p>Programmes : Google Cloud (Startup), NVIDIA Inception.</p>
+    </div>
+    <div class="card"><h2>Contact</h2>
+      <p>contact@buttertech.io</p>
+      <p>Docs rapides : <a href="/demo">démo</a> • <a href="/api/health">/api/health</a></p>
+    </div>
+  </div>
+</div>
 <script>
-async function postJSON(url, data){
-  const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});
-  return await r.json();
-}
-document.getElementById('echoBtn').onclick = async () => {
-  const t = document.getElementById('echoText').value || '';
-  const out = await postJSON('/api/agents/echo',{text:t});
-  document.getElementById('echoOut').textContent = JSON.stringify(out,null,2);
-};
-document.getElementById('gBtn').onclick = async () => {
-  const prompt = document.getElementById('gPrompt').value || '';
-  const imageUrl = document.getElementById('gImg').value || null;
-  const speak = document.getElementById('gSpeak').checked;
-  const out = await postJSON('/api/agents/gemini',{prompt, imageUrl, speak});
-  document.getElementById('gOut').textContent = JSON.stringify(out,null,2);
-  const audio = document.getElementById('gAudio');
-  if(out && out.audio_b64_mp3){
-    audio.src = 'data:audio/mp3;base64,' + out.audio_b64_mp3;
-    audio.style.display='block';
-    audio.play().catch(()=>{});
-  }else{
-    audio.removeAttribute('src'); audio.style.display='none';
-  }
-};
+(async () => {
+  try {
+    const h = await fetch('/api/health').then(r=>r.json()).catch(()=>({ok:false}));
+    const a = document.querySelector('.badge'); if(h?.ok) a.textContent='✅ En ligne · Front Vercel + Gateway Cloud Run'; 
+  } catch {}
+})();
 </script>
-</div></body></html>
+</body></html>

@@ -1,71 +1,97 @@
-import base64, os, mimetypes, requests
+import os, base64, mimetypes, logging
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
 import vertexai
-from vertexai.generative_models import GenerativeModel, Part
+from vertexai.generative_models import GenerativeModel, Part, GenerationConfig
 from google.cloud import texttospeech
 
+logging.basicConfig(level=logging.INFO)
 app = FastAPI()
 
 PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.getenv("VERTEX_LOCATION", "europe-west1")
-MODEL_ID = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")  # 2.5 flash par défaut
-TTS_VOICE = os.getenv("TTS_VOICE", "fr-FR-Neural2-A")
 
-vertexai.init(project=PROJECT, location=LOCATION)
-_model = GenerativeModel(MODEL_ID)
+# Liste de modèles tentés en cascade (tu peux forcer via GEMINI_MODEL)
+PREFERRED = [
+    os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+    "gemini-2.5-pro",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+]
 
-class EchoReq(BaseModel):
+def _init():
+    if not PROJECT: raise RuntimeError("GOOGLE_CLOUD_PROJECT non défini")
+    vertexai.init(project=PROJECT, location=LOCATION)
+
+def _get_model():
+    _init()
+    last_exc = None
+    for mid in PREFERRED:
+        try:
+            m = GenerativeModel(mid)
+            logging.info(f"Using model: {mid}")
+            return m, mid
+        except Exception as e:
+            last_exc = e
+            logging.warning(f"Model {mid} not available: {e}")
+    raise last_exc
+
+def mime_from_url(url: str) -> str:
+    guess = mimetypes.guess_type(url)[0]
+    return guess or "image/jpeg"
+
+class EchoIn(BaseModel):
     text: str
 
-class GeminiReq(BaseModel):
+class GeminiIn(BaseModel):
     prompt: str
-    imageUrl: str | None = None
-    speak: bool = False
+    imageUrl: Optional[str] = None
+
+class TtsIn(BaseModel):
+    text: str
+    languageCode: str = "fr-FR"
+    voice: str = "fr-FR-Neural2-A"
 
 @app.get("/health")
 def health():
-    return {
-        "ok": True,
-        "service": "agent-gateway",
-        "project": PROJECT,
-        "location": LOCATION,
-        "model": MODEL_ID,
-        "agents": {"echo": True, "gemini": True},
-    }
+    try:
+        _, mid = _get_model()
+        return {"status":"ok","service":"agent-gateway","model":mid,"agents":{"echo":True,"gemini":True,"tts":True}}
+    except Exception as e:
+        return {"status":"fail","error":str(e)}
 
 @app.post("/agents/echo")
-def echo(req: EchoReq):
-    return {"reply": f"Echo: {req.text}"}
-
-def _part_from_image(url: str) -> Part:
-    # Devine le mime à partir de l'extension (fallback jpeg)
-    mime, _ = mimetypes.guess_type(url)
-    if not mime:
-        mime = "image/jpeg"
-    return Part.from_uri(uri=url, mime_type=mime)
-
-def _tts_mp3_b64(text: str) -> str:
-    client = texttospeech.TextToSpeechClient()
-    input_ = texttospeech.SynthesisInput(text=text)
-    voice = texttospeech.VoiceSelectionParams(language_code=TTS_VOICE.split("-")[0] + "-" + TTS_VOICE.split("-")[1], name=TTS_VOICE)
-    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
-    audio = client.synthesize_speech(input=input_, voice=voice, audio_config=audio_config)
-    return base64.b64encode(audio.audio_content).decode("utf-8")
+def echo(inp: EchoIn):
+    return {"reply": f"Echo: {inp.text}"}
 
 @app.post("/agents/gemini")
-def run_gemini(req: GeminiReq):
+def gemini(inp: GeminiIn):
     try:
-        parts = []
-        if req.imageUrl:
-            parts.append(_part_from_image(req.imageUrl))
-        parts.append(req.prompt)
-        resp = _model.generate_content(parts)
-        text = (resp.text or "").strip()
-        out = {"ok": True, "from": "gateway", "model": MODEL_ID, "text": text}
-        if req.speak and text:
-            out["audio_b64_mp3"] = _tts_mp3_b64(text)
-        return out
+        model, mid = _get_model()
+        parts = [inp.prompt]
+        if inp.imageUrl:
+            parts.append(Part.from_uri(uri=inp.imageUrl, mime_type=mime_from_url(inp.imageUrl)))
+        out = model.generate_content(
+            parts,
+            generation_config=GenerationConfig(temperature=0.7, max_output_tokens=1024),
+        )
+        text = out.text or ""
+        return {"ok": True, "model": mid, "text": text}
     except Exception as e:
-        return {"ok": False, "from": "gateway", "status": 500, "error": str(e)}
+        logging.exception("gemini error")
+        return {"ok": False, "from":"gateway", "status": 500, "raw": "Internal Server Error", "detail": str(e)}
 
+@app.post("/voice/tts")
+def voice(inp: TtsIn):
+    try:
+        client = texttospeech.TextToSpeechClient()
+        ssml = inp.text
+        synthesis_input = texttospeech.SynthesisInput(text=ssml)
+        voice = texttospeech.VoiceSelectionParams(language_code=inp.languageCode, name=inp.voice)
+        audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
+        resp = client.synthesize_speech(input=synthesis_input, voice=voice, audio_config=audio_config)
+        return {"ok": True, "audio_b64": base64.b64encode(resp.audio_content).decode("utf-8")}
+    except Exception as e:
+        logging.exception("tts error")
+        return {"ok": False, "detail": str(e)}
