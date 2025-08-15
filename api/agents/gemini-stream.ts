@@ -1,8 +1,8 @@
 export const config = { runtime: 'nodejs22.x' };
 export default async function handler(req:any,res:any){
   if(req.method!=='POST') return res.status(405).json({error:'POST only'});
-  const url = process.env.GATEWAY_URL + '/agents/gemini/stream';
-  const r = await fetch(url,{ method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(req.body||{}) });
+  const r = await fetch(process.env.GATEWAY_URL + '/agents/gemini/stream',
+    {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(req.body||{})});
   res.status(r.status);
   for (const [k,v] of r.headers) res.setHeader(k,v);
   res.setHeader('Cache-Control','no-store'); res.setHeader('X-Accel-Buffering','no');

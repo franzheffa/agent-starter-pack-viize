@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "functions": { "api/**/*.ts": { "runtime": "nodejs22.x" } },
   "routes": [
-    { "src": "^/gateway/(.*)$", "dest": "https://agent-gateway-fqsvjamshq-ew.a.run.app/$$1" },
+    { "src": "^/gateway/(.*)$", "dest": "https://agent-gateway-112329442315.europe-west1.run.app/$$1" },
     { "src": "/$", "dest": "/public/index.html" },
     { "src": "/console$", "dest": "/public/console.html" },
     { "src": "/docs$", "dest": "/public/docs.html" },
     { "src": "/chat$", "dest": "/public/chat.html" }
   ],
-  "env": { "GATEWAY_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app" }
+  "env": { "GATEWAY_URL": "https://agent-gateway-112329442315.europe-west1.run.app" }
 }

@@ -1,46 +1,51 @@
 import os
 from typing import Optional
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, StreamingResponse
 from sse_starlette.sse import EventSourceResponse
+from fastapi.responses import StreamingResponse
 
 from google import genai
 from google.genai import types
 from google.cloud import texttospeech
 
 app = FastAPI()
+
+PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
+LOCATION = os.getenv("VERTEX_LOCATION", "europe-west1")
 DEFAULT_MODEL = os.getenv("GEMINI_MODEL","gemini-2.5-flash")
-client = genai.Client()  # ADC on Cloud Run
+
+# IMPORTANT : initialisation Vertex (pas d'API key nécessaire sur Cloud Run)
+client = genai.Client(vertexai=True, project=PROJECT, location=LOCATION)
 
 @app.get("/health")
 def health():
-    return {"status":"ok","service":"agent-gateway","model":DEFAULT_MODEL,"agents":{"echo":True,"gemini":True,"tts":True}}
+    return {"status":"ok","service":"agent-gateway","model":DEFAULT_MODEL,"agents":{"echo":True,"gemini":True,"tts":True},"project":PROJECT,"location":LOCATION}
 
 @app.post("/agents/echo")
 async def echo(req: Request):
     body = await req.json()
     return {"reply": f"Echo: {body.get('text','')}"}
 
-def parts(prompt:str, image_url:Optional[str]):
-    p=[types.Part.from_text(prompt or "")]
+def to_contents(prompt:str, image_url:Optional[str]):
+    parts=[types.Part.from_text(prompt or "")]
     if image_url:
-        p.append(types.Part.from_uri(image_url, "image/jpeg"))
-    return [types.Content(role="user", parts=p)]
+        parts.append(types.Part.from_uri(image_url, "image/jpeg"))
+    return [types.Content(role="user", parts=parts)]
 
 @app.post("/agents/gemini")
 async def gemini(req: Request):
     b = await req.json()
     model = b.get("model") or DEFAULT_MODEL
-    contents = parts(b.get("prompt",""), b.get("imageUrl"))
+    contents = to_contents(b.get("prompt",""), b.get("imageUrl"))
     resp = client.responses.generate(model=model, contents=contents)
-    text = resp.output_text or ""
-    return {"ok": True, "model": model, "text": text}
+    return {"ok": True, "model": model, "text": resp.output_text or ""}
 
 @app.post("/agents/gemini/stream")
 async def gemini_stream(req: Request):
     b = await req.json()
     model = b.get("model") or DEFAULT_MODEL
-    contents = parts(b.get("prompt",""), b.get("imageUrl"))
+    contents = to_contents(b.get("prompt",""), b.get("imageUrl"))
+
     def gen():
         try:
             with client.responses.stream(model=model, contents=contents) as stream:
@@ -51,6 +56,7 @@ async def gemini_stream(req: Request):
                         yield "data: [DONE]\n\n"
         except Exception as e:
             yield f"data: {{\"event\":\"error\",\"data\":{str(e)!r}}}\n\n"
+
     return EventSourceResponse(gen())
 
 @app.get("/voice")
