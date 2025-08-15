@@ -1,26 +1,52 @@
-import os, httpx
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+import os
 
-app = FastAPI()
-BACKEND = "https://agent-starter-pack-viize-fqsvjamshq-ew.a.run.app"
+# Vertex AI (Gemini)
+import vertexai
+from vertexai.generative_models import GenerativeModel, Part
+import requests
+
+app = FastAPI(title="Agent Gateway")
+
+class EchoIn(BaseModel):
+    text: Optional[str] = None
+    message: Optional[str] = None
+
+class GeminiIn(BaseModel):
+    prompt: str
+    imageUrl: Optional[str] = None
+
+def _init_vertex():
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("PROJECT_ID")
+    if not project:
+        raise RuntimeError("No GCP project in env (GOOGLE_CLOUD_PROJECT/PROJECT_ID)")
+    location = os.environ.get("VERTEX_LOCATION", "europe-west1")
+    vertexai.init(project=project, location=location)
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+    return GenerativeModel(model_name)
 
 @app.get("/health")
 def health():
-    return {"status":"ok","service":"agent-gateway","agents":{"echo":True,"gemini":True}}
-
-async def _post_json(url: str, payload: dict):
-    async with httpx.AsyncClient(timeout=30) as client:
-        r = await client.post(url, json=payload)
-        if r.status_code >= 400:
-            raise HTTPException(status_code=r.status_code, detail=r.text)
-        return r.json()
+    return {"ok": True, "service": "agent-gateway", "agents": {"echo": True, "gemini": True}}
 
 @app.post("/agents/echo")
-async def proxy_echo(req: Request):
-    body = await req.json()
-    return await _post_json(f"{BACKEND}/api", body)
+def echo(body: EchoIn):
+    txt = body.text or body.message or ""
+    return {"reply": f"Echo: {txt}"}
 
 @app.post("/agents/gemini")
-async def proxy_gemini(req: Request):
-    body = await req.json()
-    return await _post_json(f"{BACKEND}/api/gemini", body)
+def gemini(body: GeminiIn):
+    try:
+        model = _init_vertex()
+        parts = [body.prompt]
+        if body.imageUrl:
+            r = requests.get(body.imageUrl, timeout=10)
+            r.raise_for_status()
+            mime = (r.headers.get("content-type") or "image/jpeg").split(";")[0]
+            parts.append(Part.from_data(mime_type=mime, data=r.content))
+        resp = model.generate_content(parts)
+        return {"ok": True, "from": "gateway", "model": model.model_name, "text": resp.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
