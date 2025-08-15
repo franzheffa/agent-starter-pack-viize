@@ -1,51 +1,26 @@
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse, PlainTextResponse
-from fastapi.middleware.cors import CORSMiddleware
 import os, httpx
+from fastapi import FastAPI, Request, HTTPException
 
-app = FastAPI(title="Agent Gateway")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],      # serre ensuite sur ton domaine Vercel
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-AGENTS = {
-    "echo": os.environ.get("ECHO_URL"),  # /api en POST
-    # ajoute d'autres agents ici: "vision": os.environ.get("VISION_URL"), etc.
-}
+app = FastAPI()
+BACKEND = "https://agent-starter-pack-viize-fqsvjamshq-ew.a.run.app"
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "agent-gateway", "agents": {k: bool(v) for k,v in AGENTS.items()}}
+    return {"status":"ok","service":"agent-gateway","agents":{"echo":True,"gemini":True}}
 
-async def _forward(client: httpx.AsyncClient, method: str, url: str, req: Request):
-    params = dict(req.query_params)
-    headers = {k:v for k,v in req.headers.items() if k.lower() not in ("host","content-length","transfer-encoding")}
-    content = None
-    # tente JSON, sinon binaire brut (ex: fichiers)
-    try:
-        content = await req.json()
-        resp = await client.request(method, url, json=content, params=params, headers=headers, timeout=60)
-    except Exception:
-        body = await req.body()
-        resp = await client.request(method, url, content=body, params=params, headers=headers, timeout=60)
+async def _post_json(url: str, payload: dict):
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.post(url, json=payload)
+        if r.status_code >= 400:
+            raise HTTPException(status_code=r.status_code, detail=r.text)
+        return r.json()
 
-    ctype = resp.headers.get("content-type","")
-    if "application/json" in ctype:
-        return JSONResponse(status_code=resp.status_code, content=resp.json())
-    return PlainTextResponse(status_code=resp.status_code, content=resp.text)
+@app.post("/agents/echo")
+async def proxy_echo(req: Request):
+    body = await req.json()
+    return await _post_json(f"{BACKEND}/api", body)
 
-@app.api_route("/agents/{agent}{path:path}", methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"])
-async def route_agent(agent: str, path: str, request: Request):
-    base = AGENTS.get(agent)
-    if not base:
-        raise HTTPException(404, f"Unknown agent '{agent}'")
-    # si /agents/echo  -> redirige vers /api (par défaut)
-    target_path = path if path.strip() else "/api"
-    url = base.rstrip("/") + target_path
-    async with httpx.AsyncClient() as client:
-        return await _forward(client, request.method, url, request)
+@app.post("/agents/gemini")
+async def proxy_gemini(req: Request):
+    body = await req.json()
+    return await _post_json(f"{BACKEND}/api/gemini", body)
