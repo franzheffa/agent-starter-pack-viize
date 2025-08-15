@@ -1,8 +1,12 @@
 {
   "version": 2,
   "env": {
-    "NEXT_PUBLIC_API_BASE_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app",
-    "NEXT_PUBLIC_VIIZE_AGENT_GEMINI_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app",
-    "GATEWAY_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app"
-  }
+    "NEXT_PUBLIC_API_BASE_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app"
+  },
+  "routes": [
+    { "src": "/api/agents/echo", "dest": "/api/agents/echo.js" },
+    { "src": "/api/agents/gemini", "dest": "/api/agents/gemini.js" },
+    { "src": "/api/health", "dest": "/api/health.js" },
+    { "src": "/", "dest": "/public/index.html" }
+  ]
 }

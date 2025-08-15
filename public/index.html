@@ -1,7 +1,7 @@
 <!doctype html><meta charset="utf-8"><title>Front connecté au Gateway</title>
 <style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:940px;margin:40px auto;padding:0 16px}h1{font-size:40px}input,button{font-size:16px;padding:10px;border:1px solid #ddd;border-radius:6px}</style>
 <h1>✅ Front connecté au Gateway</h1>
-<p>Vérifs rapides : <code>/api/health → ok</code></p>
+<p>Vérifs rapides : <a href="/api/health">/api/health</a> → doit afficher <code>{ ok: true }</code></p>
 <section style="border:1px solid #eee;padding:16px;border-radius:12px;">
   <h2>Tester l'agent d'écho via proxy</h2>
   <input id="echoInput" placeholder="Bonjour" style="width:80%">
@@ -16,7 +16,19 @@
   <pre id="gOut"></pre>
 </section>
 <script>
-async function postJSON(url, body){const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const t=await r.text();try{return JSON.parse(t)}catch{return {raw:t,status:r.status}}}
-document.getElementById('echoBtn').onclick=async()=>{const q=document.getElementById('echoInput').value||'ping';const out=document.getElementById('echoOut');out.textContent='...';out.textContent=JSON.stringify(await postJSON('/api/agents/echo',{message:q}),null,2);}
-document.getElementById('gBtn').onclick=async()=>{const p=document.getElementById('gPrompt').value||'Hello';const img=document.getElementById('gImg').value||undefined;const out=document.getElementById('gOut');out.textContent='...';out.textContent=JSON.stringify(await postJSON('/api/agents/gemini',{prompt:p,imageUrl:img}),null,2);}
+async function postJSON(url, body){
+  const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  const t=await r.text(); try{return JSON.parse(t)}catch{return {raw:t,status:r.status}}
+}
+document.getElementById('echoBtn').onclick=async()=>{
+  const q=document.getElementById('echoInput').value||'ping';
+  const out=document.getElementById('echoOut'); out.textContent='...';
+  out.textContent=JSON.stringify(await postJSON('/api/agents/echo',{message:q}),null,2);
+}
+document.getElementById('gBtn').onclick=async()=>{
+  const p=document.getElementById('gPrompt').value||'Hello';
+  const img=document.getElementById('gImg').value||undefined;
+  const out=document.getElementById('gOut'); out.textContent='...';
+  out.textContent=JSON.stringify(await postJSON('/api/agents/gemini',{prompt:p,imageUrl:img}),null,2);
+}
 </script>
