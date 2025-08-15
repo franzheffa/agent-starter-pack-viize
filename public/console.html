@@ -1,80 +1,62 @@
-<!doctype html><html lang="fr"><head>
+<!doctype html><html><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Buttertech Console</title>
+<title>Buttertech • Console</title>
 <link rel="stylesheet" href="/assets/brand.css"/>
-</head><body><div class="container">
-  <nav class="nav"><a href="/" class="btn">← Accueil</a><div class="badges"><span class="badge" id="hbadge">…</span></div></nav>
-  <div class="grid">
-    <section class="card">
-      <h2>Tester Echo</h2>
-      <input id="echoText" class="input" placeholder="Tape un message…"/>
-      <div style="display:flex;gap:10px;margin-top:10px">
-        <button id="btnEcho" class="btn gold">Envoyer</button>
-        <button id="btnEchoTTS" class="btn">Parler</button>
+</head><body>
+<div class="container">
+  <div class="badge">✅ Gateway & API proxy actifs</div>
+  <h1>Console IA (stream + voix)</h1>
+  <p class="lead">Testez l’agent <b>Gemini 2.5</b> en streaming. Option “Parler” génère l’audio côté gateway.</p>
+
+  <div class="card">
+    <form id="f" onsubmit="return false;">
+      <input id="q" class="input" placeholder="Posez une question…" style="width:100%;margin-bottom:10px"/>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+        <input id="img" class="input" placeholder="https://exemple/image.jpg (optionnel)" style="flex:1"/>
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="speak"> Parler</label>
+        <button id="go" class="btn gold">Générer</button>
       </div>
-      <pre id="echoOut">{}</pre>
-    </section>
-    <section class="card">
-      <h2>Gemini 2.5 (texte + URL image)</h2>
-      <textarea id="gTxt" class="input" placeholder="Ex: donne un haïku sur le code."></textarea>
-      <input id="gImg" class="input" placeholder="https://exemple/image.jpg (optionnel)"/>
-      <div style="display:flex;gap:10px;margin-top:10px">
-        <select id="model" class="select">
-          <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-          <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-        </select>
-        <button id="btnGen" class="btn gold">Générer</button>
-        <button id="btnSpeak" class="btn">Voix</button>
-        <button id="btnMic" class="btn">🎙️ Dictée</button>
-      </div>
-      <pre id="gOut">{}</pre>
-      <audio id="player" controls style="width:100%;margin-top:10px"></audio>
-    </section>
+    </form>
+    <pre id="out" class="stream mono"></pre>
+    <audio id="player" controls style="margin-top:10px;display:none"></audio>
   </div>
 </div>
+
 <script>
-async function health(){
-  try{ const r=await fetch('/api/health'); const j=await r.json();
-    document.getElementById('hbadge').textContent = j.ok ? '✅ API ok' : '❌';
-  }catch{ document.getElementById('hbadge').textContent='⚠️'; }
+const out = document.getElementById('out');
+const btn = document.getElementById('go');
+const q   = document.getElementById('q');
+const img = document.getElementById('img');
+const speak = document.getElementById('speak');
+const player = document.getElementById('player');
+
+async function streamChat() {
+  out.textContent = ''; player.style.display='none'; player.removeAttribute('src');
+  btn.disabled = true;
+  const r = await fetch('/api/agents/gemini?stream=1', {
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body: JSON.stringify({ prompt: q.value || 'Bonjour', imageUrl: img.value || null })
+  });
+  if (!r.body) { out.textContent = await r.text(); btn.disabled=false; return; }
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  while (true) {
+    const {value, done} = await reader.read();
+    if (done) break;
+    out.textContent += decoder.decode(value, {stream:true});
+  }
+  // Option "Parler"
+  if (speak.checked) {
+    const rr = await fetch('/api/voice/tts', {method:'POST', body: out.textContent});
+    const blob = await rr.blob();
+    player.src = URL.createObjectURL(blob);
+    player.style.display='block';
+    player.play().catch(()=>{});
+  }
+  btn.disabled = false;
 }
-health();
-
-async function tts(text){
-  const r = await fetch('/api/voice?text='+encodeURIComponent(text));
-  if(!r.ok) throw new Error('TTS failed');
-  const b = await r.blob();
-  const url = URL.createObjectURL(b);
-  const p = document.getElementById('player'); p.src=url; p.play();
-}
-
-document.getElementById('btnEcho').onclick = async ()=>{
-  const text = (document.getElementById('echoText').value||'').trim();
-  const r = await fetch('/api/agents/echo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text})});
-  const j = await r.json(); document.getElementById('echoOut').textContent = JSON.stringify(j,null,2);
-};
-document.getElementById('btnEchoTTS').onclick = async ()=>{
-  const text = (document.getElementById('echoText').value||'').trim();
-  await tts(text);
-};
-
-document.getElementById('btnGen').onclick = async ()=>{
-  const prompt=(document.getElementById('gTxt').value||'').trim();
-  const imageUrl=(document.getElementById('gImg').value||'').trim();
-  const model=document.getElementById('model').value;
-  const r = await fetch('/api/agents/gemini',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt,imageUrl,model})});
-  const j = await r.json(); document.getElementById('gOut').textContent = JSON.stringify(j,null,2);
-};
-document.getElementById('btnSpeak').onclick = async ()=>{
-  const txt = JSON.parse(document.getElementById('gOut').textContent||'{}').text || document.getElementById('gTxt').value;
-  if(txt) await tts(txt);
-};
-
-document.getElementById('btnMic').onclick = ()=>{
-  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){ alert("La dictée n'est pas supportée par ce navigateur."); return;}
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const rec = new SR(); rec.lang='fr-FR'; rec.interimResults=false; rec.maxAlternatives=1; rec.start();
-  rec.onresult = e => { document.getElementById('gTxt').value = e.results[0][0].transcript; };
-};
+document.getElementById('f').addEventListener('submit', streamChat);
+btn.addEventListener('click', streamChat);
 </script>
 </body></html>

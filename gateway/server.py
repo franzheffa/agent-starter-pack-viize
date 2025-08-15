@@ -1,69 +1,82 @@
 import os
-from typing import Optional
-from fastapi import FastAPI, Request
-from sse_starlette.sse import EventSourceResponse
-from fastapi.responses import StreamingResponse
+from typing import Optional, Iterator, List, Union
+from fastapi import FastAPI, Body
+from fastapi.responses import JSONResponse, StreamingResponse, Response
+from pydantic import BaseModel
 
-from google import genai
-from google.genai import types
-from google.cloud import texttospeech
-
-app = FastAPI()
+# Vertex AI (Generative)
+import vertexai
+from vertexai.generative_models import GenerativeModel, Part
+# TTS
+from google.cloud import texttospeech as tts
 
 PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.getenv("VERTEX_LOCATION", "europe-west1")
-DEFAULT_MODEL = os.getenv("GEMINI_MODEL","gemini-2.5-flash")
+MODEL_NAME = os.getenv("GEMINI_MODEL","gemini-2.5-flash")
 
-# IMPORTANT : initialisation Vertex (pas d'API key nécessaire sur Cloud Run)
-client = genai.Client(vertexai=True, project=PROJECT, location=LOCATION)
+app = FastAPI()
+_model: Optional[GenerativeModel] = None
+
+def _init_vertex():
+    global _model
+    if _model is None:
+        vertexai.init(project=PROJECT, location=LOCATION)  # ADC on Cloud Run
+        _model = GenerativeModel(MODEL_NAME)
+    return _model
 
 @app.get("/health")
 def health():
-    return {"status":"ok","service":"agent-gateway","model":DEFAULT_MODEL,"agents":{"echo":True,"gemini":True,"tts":True},"project":PROJECT,"location":LOCATION}
+    return {"status":"ok","service":"agent-gateway","model":MODEL_NAME,"agents":{"echo":True,"gemini":True,"tts":True}}
+
+class EchoIn(BaseModel):
+    text: str = ""
 
 @app.post("/agents/echo")
-async def echo(req: Request):
-    body = await req.json()
-    return {"reply": f"Echo: {body.get('text','')}"}
+def echo(inp: EchoIn):
+    return {"reply": f"Echo: {inp.text}"}
 
-def to_contents(prompt:str, image_url:Optional[str]):
-    parts=[types.Part.from_text(prompt or "")]
-    if image_url:
-        parts.append(types.Part.from_uri(image_url, "image/jpeg"))
-    return [types.Content(role="user", parts=parts)]
+class GeminiIn(BaseModel):
+    prompt: str
+    imageUrl: Optional[str] = None
+
+def _contents(inp: GeminiIn) -> List[Union[str, Part]]:
+    if inp.imageUrl:
+        return [Part.from_uri(inp.imageUrl, mime_type="image/jpeg"), inp.prompt]
+    return [inp.prompt]
 
 @app.post("/agents/gemini")
-async def gemini(req: Request):
-    b = await req.json()
-    model = b.get("model") or DEFAULT_MODEL
-    contents = to_contents(b.get("prompt",""), b.get("imageUrl"))
-    resp = client.responses.generate(model=model, contents=contents)
-    return {"ok": True, "model": model, "text": resp.output_text or ""}
+def gemini(inp: GeminiIn, stream: int = 0):
+    model = _init_vertex()
+    if stream:
+        def gen() -> Iterator[bytes]:
+            for chunk in model.generate_content(_contents(inp), stream=True):
+                txt = ""
+                try:
+                    # robust extraction
+                    if getattr(chunk, "text", ""):
+                        txt = chunk.text
+                    else:
+                        # older SDK shapes
+                        cand = chunk.candidates[0]
+                        part = cand.content.parts[0]
+                        txt = getattr(part, "text", "") or ""
+                except Exception:
+                    txt = ""
+                if txt:
+                    yield txt.encode("utf-8")
+        return StreamingResponse(gen(), media_type="text/plain; charset=utf-8")
+    else:
+        out = model.generate_content(_contents(inp))
+        return JSONResponse({"ok": True, "model": MODEL_NAME, "text": getattr(out, "text", "")})
 
-@app.post("/agents/gemini/stream")
-async def gemini_stream(req: Request):
-    b = await req.json()
-    model = b.get("model") or DEFAULT_MODEL
-    contents = to_contents(b.get("prompt",""), b.get("imageUrl"))
-
-    def gen():
-        try:
-            with client.responses.stream(model=model, contents=contents) as stream:
-                for ev in stream:
-                    if ev.type == "response.output_text.delta":
-                        yield f"data: {{\"event\":\"delta\",\"data\":{ev.delta!r}}}\n\n"
-                    elif ev.type == "response.completed":
-                        yield "data: [DONE]\n\n"
-        except Exception as e:
-            yield f"data: {{\"event\":\"error\",\"data\":{str(e)!r}}}\n\n"
-
-    return EventSourceResponse(gen())
-
-@app.get("/voice")
-def tts(text: str = "Bonjour de Buttertech."):
-    tts_client = texttospeech.TextToSpeechClient()
-    input_text = texttospeech.SynthesisInput(text=text)
-    voice = texttospeech.VoiceSelectionParams(language_code="fr-FR", ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL)
-    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=1.0)
-    audio = tts_client.synthesize_speech(input=input_text, voice=voice, audio_config=audio_config)
-    return StreamingResponse(iter([audio.audio_content]), media_type="audio/mpeg")
+# ---- Text-to-Speech (MP3)
+@app.post("/agents/tts")
+def tts_mp3(text: str = Body(..., media_type="text/plain")):
+    client = tts.TextToSpeechClient()
+    req = tts.SynthesizeSpeechRequest(
+        input=tts.SynthesisInput(text=text[:5000]),
+        voice=tts.VoiceSelectionParams(language_code="fr-FR", name="fr-FR-Neural2-C"),
+        audio_config=tts.AudioConfig(audio_encoding=tts.AudioEncoding.MP3)
+    )
+    audio = client.synthesize_speech(request=req).audio_content
+    return Response(content=audio, media_type="audio/mpeg")
