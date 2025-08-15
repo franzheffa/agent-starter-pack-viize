@@ -11,5 +11,7 @@ steps:
      '--region','${_REGION}',
      '--allow-unauthenticated','--platform','managed',
      '--set-env-vars','GOOGLE_CLOUD_PROJECT=$PROJECT_ID,VERTEX_LOCATION=${_REGION},GEMINI_MODEL=gemini-2.5-flash']
-substitutions: { _REGION: ${_REGION} }
+# valeur par défaut; sera écrasée par --substitutions si tu le fournis
+substitutions:
+  _REGION: europe-west1
 images: []
