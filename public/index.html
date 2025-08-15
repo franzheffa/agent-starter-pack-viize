@@ -1,34 +1,103 @@
-<!doctype html><meta charset="utf-8"><title>Front connecté au Gateway</title>
-<style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:940px;margin:40px auto;padding:0 16px}h1{font-size:40px}input,button{font-size:16px;padding:10px;border:1px solid #ddd;border-radius:6px}</style>
-<h1>✅ Front connecté au Gateway</h1>
-<p>Vérifs rapides : <a href="/api/health">/api/health</a> → doit afficher <code>{ ok: true }</code></p>
-<section style="border:1px solid #eee;padding:16px;border-radius:12px;">
-  <h2>Tester l'agent d'écho via proxy</h2>
-  <input id="echoInput" placeholder="Bonjour" style="width:80%">
-  <button id="echoBtn">Envoyer</button>
-  <pre id="echoOut"></pre>
-</section>
-<section style="border:1px solid #eee;padding:16px;border-radius:12px;margin-top:20px;">
-  <h2>Tester Gemini (texte + image URL optionnelle)</h2>
-  <input id="gPrompt" placeholder="Donne-moi un haïku sur le code." style="width:80%"><br><br>
-  <input id="gImg" placeholder="https://exemple/image.jpg (optionnel)" style="width:80%"><br><br>
-  <button id="gBtn">Générer</button>
-  <pre id="gOut"></pre>
-</section>
-<script>
-async function postJSON(url, body){
-  const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
-  const t=await r.text(); try{return JSON.parse(t)}catch{return {raw:t,status:r.status}}
-}
-document.getElementById('echoBtn').onclick=async()=>{
-  const q=document.getElementById('echoInput').value||'ping';
-  const out=document.getElementById('echoOut'); out.textContent='...';
-  out.textContent=JSON.stringify(await postJSON('/api/agents/echo',{message:q}),null,2);
-}
-document.getElementById('gBtn').onclick=async()=>{
-  const p=document.getElementById('gPrompt').value||'Hello';
-  const img=document.getElementById('gImg').value||undefined;
-  const out=document.getElementById('gOut'); out.textContent='...';
-  out.textContent=JSON.stringify(await postJSON('/api/agents/gemini',{prompt:p,imageUrl:img}),null,2);
-}
-</script>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Buttertech – Plateforme d’agents IA pour les entreprises</title>
+  <meta name="description" content="Buttertech construit une passerelle sécurisée pour orchestrer des agents IA spécialisés (recherche, RAG, automation) sur Cloud Run avec un front Vercel.">
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    :root{--bg:#0b0b10;--card:#12121a;--text:#eaeaf2;--muted:#a3a3b2;--pri:#7c9cff;--ok:#10b981}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    a{color:var(--pri);text-decoration:none} a:hover{text-decoration:underline}
+    .wrap{max-width:980px;margin:0 auto;padding:40px 20px}
+    .hero{padding:40px 0}
+    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(16,185,129,.1);color:#b7f7dc;border:1px solid rgba(16,185,129,.3);padding:6px 10px;border-radius:999px;font-size:14px}
+    h1{font-size:40px;margin:14px 0 10px} h2{font-size:26px;margin:24px 0 10px}
+    p.lead{font-size:18px;color:var(--muted);max-width:820px}
+    .grid{display:grid;gap:18px}@media(min-width:860px){.grid{grid-template-columns:1fr 1fr}}
+    .card{background:var(--card);border:1px solid #1e2030;border-radius:14px;padding:18px}
+    ul{margin:8px 0 0 18px}
+    .foot{margin:40px 0;color:var(--muted);font-size:14px}
+    .pill{display:inline-block;background:#1f2438;border:1px solid #2a2f46;color:#cdd6f4;border-radius:999px;padding:4px 10px;margin-right:6px;font-size:12px}
+    .cta{display:inline-block;background:var(--pri);color:#0a0a0f;border-radius:10px;padding:10px 14px;font-weight:600;border:0}
+    .ok{color:var(--ok);font-weight:600}
+    code{background:#1e2236;border:1px solid #2b3152;padding:2px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <span class="badge">✅ En ligne&nbsp;•&nbsp;Front Vercel + Gateway Cloud Run</span>
+      <h1>Buttertech – passerelle d’agents IA pour l’entreprise</h1>
+      <p class="lead">
+        Nous construisons une plateforme d’<strong>agents IA spécialisés</strong> (recherche, RAG, automatisation)
+        orchestrés derrière une <strong>API Gateway</strong> sur Google Cloud Run, avec un front léger sur Vercel.
+        Objectif : accélérer la mise en production d’usages IA fiables (auditables, observables, isolés par agent).
+      </p>
+      <p>
+        <a class="cta" href="/dev.html">Voir la démo technique</a>
+        &nbsp;&nbsp;<a href="/api/health">/api/health</a> • <a href="https://agent-gateway-112329442315.europe-west1.run.app/health">/gateway/health</a>
+      </p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Ce que nous faisons</h2>
+        <ul>
+          <li>Une <strong>gateway FastAPI</strong> qui proxifie des agents isolés (Cloud Run) : <code>/agents/&lt;nom&gt;</code>.</li>
+          <li>Des <strong>agents unitaires</strong> (ex. “echo”, “gemini”) packagés en conteneurs, déployés indépendamment.</li>
+          <li>Un <strong>front minimal</strong> (Vercel Functions + static) pour tester et intégrer rapidement.</li>
+          <li><strong>Observabilité</strong> (logs Cloud Run + Vercel), <strong>sécurité</strong> par service account & env per agent.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Problèmes que nous résolvons</h2>
+        <ul>
+          <li>Éviter les conflits entre agents et les “hallucinations” croisées via <strong>isolation</strong> par service.</li>
+          <li>Réduire le <strong>time-to-prod</strong> : build & deploy en 1 commande (<em>Cloud Build</em>).</li>
+          <li>Offrir une <strong>surface API stable</strong> pour des intégrations web & internes.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Produits (état actuel)</h2>
+        <ul>
+          <li><strong>Agent Gateway</strong> (Cloud Run) — routes <code>/agents/echo</code>, <code>/agents/gemini</code>.</li>
+          <li><strong>Agent “Echo”</strong> — service de test pour valider la chaîne réseau.</li>
+          <li><strong>Agent “Gemini”</strong> — génération texte (Vertex AI, <code>gemini-1.5-flash</code>).</li>
+        </ul>
+        <p class="ok">Statut:&nbsp;en ligne • démos publiques disponibles.</p>
+      </div>
+      <div class="card">
+        <h2>Clients cibles</h2>
+        <ul>
+          <li>PME/ETI qui veulent <strong>piloter des agents IA</strong> sûrs et audités.</li>
+          <li>Equipes data/innovation qui souhaitent <strong>prototyper → produire</strong> en quelques jours.</li>
+        </ul>
+        <p><span class="pill">B2B SaaS</span><span class="pill">API-first</span><span class="pill">Cloud-native</span></p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Équipe</h2>
+        <p>
+          <strong>Franz Heffa</strong> — fondateur / ingénierie produit. <br/>
+          Expérience : apps cloud, stacks IA, déploiements prod GCP & Vercel.
+        </p>
+        <p>Nous complétons l’équipe (conseil produit & go-to-market).</p>
+      </div>
+      <div class="card">
+        <h2>Contact</h2>
+        <p>Contact : <a href="mailto:contact@buttertech.io">contact@buttertech.io</a></p>
+        <p>Docs rapides : <a href="/dev.html">démo</a> • <a href="/api/health">/api/health</a></p>
+      </div>
+    </div>
+
+    <p class="foot">© Buttertech — construit sur Google Cloud Run & Vercel.</p>
+  </div>
+</body>
+</html>
