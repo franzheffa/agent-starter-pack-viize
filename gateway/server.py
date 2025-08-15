@@ -1,48 +1,71 @@
-import os, json, requests
+import base64, os, mimetypes, requests
 from fastapi import FastAPI
 from pydantic import BaseModel
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part
+from google.cloud import texttospeech
 
 app = FastAPI()
 
 PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.getenv("VERTEX_LOCATION", "europe-west1")
-MODEL    = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-ECHO_URL = os.getenv("ECHO_URL")  # injecté au build
+MODEL_ID = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")  # 2.5 flash par défaut
+TTS_VOICE = os.getenv("TTS_VOICE", "fr-FR-Neural2-A")
 
-class EchoIn(BaseModel):
+vertexai.init(project=PROJECT, location=LOCATION)
+_model = GenerativeModel(MODEL_ID)
+
+class EchoReq(BaseModel):
     text: str
 
-class GeminiIn(BaseModel):
+class GeminiReq(BaseModel):
     prompt: str
     imageUrl: str | None = None
+    speak: bool = False
 
 @app.get("/health")
 def health():
-    return {"status":"ok","service":"agent-gateway","agents":{"echo": True, "gemini": True}}
+    return {
+        "ok": True,
+        "service": "agent-gateway",
+        "project": PROJECT,
+        "location": LOCATION,
+        "model": MODEL_ID,
+        "agents": {"echo": True, "gemini": True},
+    }
 
 @app.post("/agents/echo")
-def agent_echo(body: EchoIn):
-    r = requests.post(f"{ECHO_URL}/api", json={"message": body.text}, timeout=15)
-    r.raise_for_status()
-    return r.json()
+def echo(req: EchoReq):
+    return {"reply": f"Echo: {req.text}"}
+
+def _part_from_image(url: str) -> Part:
+    # Devine le mime à partir de l'extension (fallback jpeg)
+    mime, _ = mimetypes.guess_type(url)
+    if not mime:
+        mime = "image/jpeg"
+    return Part.from_uri(uri=url, mime_type=mime)
+
+def _tts_mp3_b64(text: str) -> str:
+    client = texttospeech.TextToSpeechClient()
+    input_ = texttospeech.SynthesisInput(text=text)
+    voice = texttospeech.VoiceSelectionParams(language_code=TTS_VOICE.split("-")[0] + "-" + TTS_VOICE.split("-")[1], name=TTS_VOICE)
+    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
+    audio = client.synthesize_speech(input=input_, voice=voice, audio_config=audio_config)
+    return base64.b64encode(audio.audio_content).decode("utf-8")
 
 @app.post("/agents/gemini")
-def agent_gemini(body: GeminiIn):
+def run_gemini(req: GeminiReq):
     try:
-        if not PROJECT:
-            return {"ok": False, "from":"gateway", "status": 500, "detail": "GOOGLE_CLOUD_PROJECT is not set"}
-        vertexai.init(project=PROJECT, location=LOCATION)
-        model = GenerativeModel(MODEL)
-
-        parts: list = []
-        if body.imageUrl:
-            # laisse Vertex inférer le mime-type; si besoin préciser "image/jpeg"
-            parts.append(Part.from_uri(body.imageUrl))
-        parts.append(body.prompt)
-
-        resp = model.generate_content(parts)
-        return {"ok": True, "from":"gateway", "text": getattr(resp, "text", str(resp))}
+        parts = []
+        if req.imageUrl:
+            parts.append(_part_from_image(req.imageUrl))
+        parts.append(req.prompt)
+        resp = _model.generate_content(parts)
+        text = (resp.text or "").strip()
+        out = {"ok": True, "from": "gateway", "model": MODEL_ID, "text": text}
+        if req.speak and text:
+            out["audio_b64_mp3"] = _tts_mp3_b64(text)
+        return out
     except Exception as e:
-        return {"ok": False, "from":"gateway", "status": 500, "raw": "Internal Server Error", "detail": str(e)}
+        return {"ok": False, "from": "gateway", "status": 500, "error": str(e)}
+
