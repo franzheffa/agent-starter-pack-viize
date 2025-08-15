@@ -1,7 +1,8 @@
-export const config = { runtime: 'edge' };
-import { gw } from '../_gw';
-export default async function handler(req: Request){
-  const body = await req.json().catch(()=>({}));
-  const { json, status } = await gw('/agents/gemini', body);
-  return new Response(JSON.stringify(json), { status, headers: { 'content-type': 'application/json' }});
+export const config = { runtime: 'nodejs' };
+export default async function handler(req:any,res:any){
+  if(req.method!=='POST') return res.status(405).json({error:'POST only'});
+  const { prompt, imageUrl, model } = req.body||{};
+  const url = (process.env.GATEWAY_URL||'https://agent-gateway-112329442315.europe-west1.run.app') + '/agents/gemini';
+  const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt,imageUrl,model})});
+  const j = await r.json(); res.status(r.status).json(j);
 }

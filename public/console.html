@@ -1,0 +1,80 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Buttertech Console</title>
+<link rel="stylesheet" href="/assets/brand.css"/>
+</head><body><div class="container">
+  <nav class="nav"><a href="/" class="btn">← Accueil</a><div class="badges"><span class="badge" id="hbadge">…</span></div></nav>
+  <div class="grid">
+    <section class="card">
+      <h2>Tester Echo</h2>
+      <input id="echoText" class="input" placeholder="Tape un message…"/>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button id="btnEcho" class="btn gold">Envoyer</button>
+        <button id="btnEchoTTS" class="btn">Parler</button>
+      </div>
+      <pre id="echoOut">{}</pre>
+    </section>
+    <section class="card">
+      <h2>Gemini 2.5 (texte + URL image)</h2>
+      <textarea id="gTxt" class="input" placeholder="Ex: donne un haïku sur le code."></textarea>
+      <input id="gImg" class="input" placeholder="https://exemple/image.jpg (optionnel)"/>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <select id="model" class="select">
+          <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+        </select>
+        <button id="btnGen" class="btn gold">Générer</button>
+        <button id="btnSpeak" class="btn">Voix</button>
+        <button id="btnMic" class="btn">🎙️ Dictée</button>
+      </div>
+      <pre id="gOut">{}</pre>
+      <audio id="player" controls style="width:100%;margin-top:10px"></audio>
+    </section>
+  </div>
+</div>
+<script>
+async function health(){
+  try{ const r=await fetch('/api/health'); const j=await r.json();
+    document.getElementById('hbadge').textContent = j.ok ? '✅ API ok' : '❌';
+  }catch{ document.getElementById('hbadge').textContent='⚠️'; }
+}
+health();
+
+async function tts(text){
+  const r = await fetch('/api/voice?text='+encodeURIComponent(text));
+  if(!r.ok) throw new Error('TTS failed');
+  const b = await r.blob();
+  const url = URL.createObjectURL(b);
+  const p = document.getElementById('player'); p.src=url; p.play();
+}
+
+document.getElementById('btnEcho').onclick = async ()=>{
+  const text = (document.getElementById('echoText').value||'').trim();
+  const r = await fetch('/api/agents/echo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text})});
+  const j = await r.json(); document.getElementById('echoOut').textContent = JSON.stringify(j,null,2);
+};
+document.getElementById('btnEchoTTS').onclick = async ()=>{
+  const text = (document.getElementById('echoText').value||'').trim();
+  await tts(text);
+};
+
+document.getElementById('btnGen').onclick = async ()=>{
+  const prompt=(document.getElementById('gTxt').value||'').trim();
+  const imageUrl=(document.getElementById('gImg').value||'').trim();
+  const model=document.getElementById('model').value;
+  const r = await fetch('/api/agents/gemini',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt,imageUrl,model})});
+  const j = await r.json(); document.getElementById('gOut').textContent = JSON.stringify(j,null,2);
+};
+document.getElementById('btnSpeak').onclick = async ()=>{
+  const txt = JSON.parse(document.getElementById('gOut').textContent||'{}').text || document.getElementById('gTxt').value;
+  if(txt) await tts(txt);
+};
+
+document.getElementById('btnMic').onclick = ()=>{
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){ alert("La dictée n'est pas supportée par ce navigateur."); return;}
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR(); rec.lang='fr-FR'; rec.interimResults=false; rec.maxAlternatives=1; rec.start();
+  rec.onresult = e => { document.getElementById('gTxt').value = e.results[0][0].transcript; };
+};
+</script>
+</body></html>

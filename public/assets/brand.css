@@ -1,0 +1,30 @@
+:root{
+  --bg:#0b0b0d; --card:#121216; --muted:#1b1b20;
+  --fg:#ffffff; --sub:#c7c8cc; --gold:#c9832b; --accent:#f1a74a;
+  --radius:18px; --border:#222;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font:16px/1.6 Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
+.container{max-width:1120px;margin:0 auto;padding:28px}
+.nav{display:flex;gap:18px;align-items:center;justify-content:space-between;margin:8px 0 20px}
+.nav a{color:#ddd;text-decoration:none;padding:8px 12px;border-radius:10px}
+.nav a:hover{background:#15151a}
+.badge{display:inline-flex;gap:8px;align-items:center;background:#0d160d;border:1px solid #1f3a20;color:#bdf7bd;padding:6px 10px;border-radius:999px;font-size:.85rem}
+h1{font-size:clamp(34px,4vw,56px);line-height:1.05;margin:14px 0 6px}
+h2{font-size:clamp(22px,2.4vw,32px);margin:18px 0 8px}
+.lead{color:var(--sub);font-size:1.1rem;max-width:70ch}
+.btn{appearance:none;border:1px solid var(--border);background:linear-gradient(180deg,#1a1a20,#121218);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+.btn.gold{border-color:#5c3a12;background:linear-gradient(180deg,#d69a40,#c9832b);color:#111;font-weight:600}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.kbd{padding:2px 6px;border:1px solid #444;border-bottom-width:2px;border-radius:8px;background:#0f0f12}
+.input,.select{width:100%;background:#0e0e12;border:1px solid #26262b;color:#fff;border-radius:12px;padding:10px 12px}
+textarea.input{min-height:110px;resize:vertical}
+pre{background:#0e0e12;border:1px solid #26262b;border-radius:14px;padding:12px;overflow:auto}
+.hr{height:1px;background:#19191d;margin:18px 0}
+.footer{opacity:.7;font-size:.9rem;margin:28px 0}
+.logo{display:flex;align-items:center;gap:10px}
+.logo img{height:28px}
+.badges{display:flex;gap:10px;flex-wrap:wrap}
+.tag{font-size:.85rem;background:#111218;border:1px solid #29292f;border-radius:999px;padding:4px 10px;color:#c7c8cc}
+.hero{display:grid;gap:22px;grid-template-columns:1.1fr .9fr;align-items:center}
+@media (max-width:900px){.hero{grid-template-columns:1fr}}

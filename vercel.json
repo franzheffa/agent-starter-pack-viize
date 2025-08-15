@@ -1,6 +1,13 @@
 {
   "version": 2,
+  "functions": { "api/**/*.ts": { "runtime": "nodejs22.x" } },
+  "routes": [
+    { "src": "^/gateway/(.*)$", "dest": "https://agent-gateway-112329442315.europe-west1.run.app/$1" },
+    { "src": "/$", "dest": "/public/index.html" },
+    { "src": "/console", "dest": "/public/console.html" },
+    { "src": "/docs", "dest": "/public/docs.html" }
+  ],
   "env": {
-    "NEXT_PUBLIC_API_BASE_URL": "https://agent-gateway-112329442315.europe-west1.run.app"
+    "GATEWAY_URL": "https://agent-gateway-112329442315.europe-west1.run.app"
   }
 }
