@@ -1,21 +1,11 @@
-substitutions:
-  _SERVICE: "agent-gateway"
-  _REGION: "europe-west1"
-  _GEMINI_MODEL: "gemini-2.5-flash"
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build','-t','gcr.io/$PROJECT_ID/${_SERVICE}:$BUILD_ID','-f','Dockerfile.gateway','.']
+  args: ['build','-t','gcr.io/$PROJECT_ID/agent-gateway:$BUILD_ID','-f','Dockerfile.gateway','.']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push','gcr.io/$PROJECT_ID/${_SERVICE}:$BUILD_ID']
+  args: ['push','gcr.io/$PROJECT_ID/agent-gateway:$BUILD_ID']
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
-  args:
-    [
-      'run','deploy','${_SERVICE}',
-      '--image','gcr.io/$PROJECT_ID/${_SERVICE}:$BUILD_ID',
-      '--region','${_REGION}',
-      '--platform','managed',
-      '--allow-unauthenticated',
-      '--set-env-vars','GOOGLE_CLOUD_PROJECT=$PROJECT_ID,VERTEX_LOCATION=${_REGION},GEMINI_MODEL=${_GEMINI_MODEL}',
-      '--concurrency','20','--cpu','1','--memory','512Mi'
-    ]
+  args: ['run','deploy','agent-gateway','--image','gcr.io/$PROJECT_ID/agent-gateway:$BUILD_ID','--region','${_REGION}','--allow-unauthenticated','--platform','managed','--set-env-vars','GOOGLE_CLOUD_PROJECT=$PROJECT_ID,VERTEX_LOCATION=${_REGION},GEMINI_MODEL=gemini-2.5-flash']
+substitutions:
+  _REGION: ${_REGION}
+images: []

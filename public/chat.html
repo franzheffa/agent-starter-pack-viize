@@ -1,0 +1,39 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Buttertech Chat (stream)</title><link rel="stylesheet" href="/assets/brand.css"/></head>
+<body><div class="container">
+<nav class="nav"><a class="btn" href="/">← Accueil</a><span class="badge">Gemini 2.5 · Streaming</span></nav>
+<div class="card">
+  <div id="log" style="min-height:160px;white-space:pre-wrap"></div>
+  <textarea id="msg" class="input" placeholder="Message…"></textarea>
+  <div style="display:flex;gap:10px;margin-top:10px">
+    <select id="model" class="select"><option>gemini-2.5-flash</option><option>gemini-2.5-pro</option></select>
+    <button id="send" class="btn gold">Envoyer</button>
+    <button id="mic" class="btn">🎙️ Dictée</button>
+    <button id="speak" class="btn">🔊 Lire</button>
+  </div>
+</div>
+<audio id="player" style="width:100%;margin-top:12px" controls></audio>
+</div>
+<script>
+const log = document.getElementById('log'); const msg = document.getElementById('msg');
+let lastText = "";
+function append(t){ log.textContent += t; log.scrollTop = log.scrollHeight; }
+async function streamChat(q){
+  lastText=""; append("\\n🟡 Toi: "+q+"\\n🟢 Agent: ");
+  const r = await fetch('/api/agents/gemini-stream',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt:q,model:document.getElementById('model').value})});
+  if(!r.ok){ append("\\n[Erreur "+r.status+"]"); return; }
+  const reader = r.body.getReader(); const decoder = new TextDecoder();
+  while(true){ const {value,done}=await reader.read(); if(done) break;
+    const chunk = decoder.decode(value); chunk.split("\\n").forEach(line=>{
+      if(!line.startsWith("data:")) return; const data=line.slice(5).trim(); if(!data) return;
+      if(data==="[DONE]"){ append("\\n"); return; }
+      try{ const j=JSON.parse(data); if(j.event==="delta"){ append(j.data); lastText+=j.data; } }catch{}
+    });
+  }
+}
+document.getElementById('send').onclick=()=>{ const q=(msg.value||"").trim(); if(q) streamChat(q); };
+document.getElementById('speak').onclick=async()=>{ if(!lastText) return; const r=await fetch('/api/voice?text='+encodeURIComponent(lastText)); const b=await r.blob(); const url=URL.createObjectURL(b); const p=document.getElementById('player'); p.src=url; p.play(); };
+document.getElementById('mic').onclick=()=>{ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){ alert("Dictée non supportée."); return; } const rec=new SR(); rec.lang='fr-FR'; rec.onresult=e=>{ msg.value=e.results[0][0].transcript; }; rec.start(); };
+</script>
+</body></html>
