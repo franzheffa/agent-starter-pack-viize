@@ -1,32 +1,25 @@
 steps:
-# Étape 1: Construire l'image Docker avec le contexte de build à la racine du dépôt
-- name: 'gcr.io/cloud-builders/docker'
-  args: [
-    'build',
-    '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA',
-    '.', # Le point '.' indique que le contexte de build est la racine du dépôt
-    '-f', 'src/deployment_targets/cloud_run/Dockerfile' # Spécifie le chemin relatif du Dockerfile depuis la racine
-  ]
-
-# Étape 2: Pousser l'image vers Artifact Registry (uniquement si l'étape 1 a réussi)
-- name: 'gcr.io/cloud-builders/docker'
-  args: [
-    'push',
-    'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA'
-  ]
-
-# Étape 3: Déployer l'image sur Cloud Run
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+- name: gcr.io/cloud-builders/docker
+  args: ['build',
+         '-t','gcr.io/$PROJECT_ID/agent-starter-pack-viize:${BUILD_ID}',
+         '-t','gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest',
+         '.']
+- name: gcr.io/cloud-builders/docker
+  args: ['push','gcr.io/$PROJECT_ID/agent-starter-pack-viize:${BUILD_ID}']
+- name: gcr.io/cloud-builders/docker
+  args: ['push','gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest']
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
   entrypoint: gcloud
   args:
-    - 'run'
-    - 'deploy'
-    - 'agent-starter-pack-viize'
-    - '--image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/agent-starter-pack-viize/agent-starter-pack-viize:$COMMIT_SHA'
-    - '--region=europe-west1'
-    - '--platform=managed'
-    - '--allow-unauthenticated'
-    - '--service-account=agent-starter-pack-viize-sa@buttertech-ai-platform.iam.gserviceaccount.com'
-
+    - run
+    - deploy
+    - agent-starter-pack-viize
+    - --image=gcr.io/$PROJECT_ID/agent-starter-pack-viize:${BUILD_ID}
+    - --region=europe-west1
+    - --allow-unauthenticated
+    - --platform=managed
+images:
+- gcr.io/$PROJECT_ID/agent-starter-pack-viize:${BUILD_ID}
+- gcr.io/$PROJECT_ID/agent-starter-pack-viize:latest
 options:
   logging: CLOUD_LOGGING_ONLY
