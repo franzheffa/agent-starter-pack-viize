@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr"><meta charset="utf-8"/>
+<title>Agent Gateway – Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;padding:24px;max-width:760px;margin:0 auto}input,button{font:inherit;padding:.6rem .8rem}code{background:#f3f3f3;padding:.2rem .4rem;border-radius:.3rem}</style>
+<h1>✅ Front connecté au Gateway</h1>
+<p>Vérifs rapides :</p>
+<ol>
+  <li><a href="/api/health" target="_blank">/api/health</a> (doit renvoyer <code>{ ok: true }</code>)</li>
+</ol>
+<hr/>
+<h2>Tester l’agent d’écho via proxy</h2>
+<form id="f"><input id="msg" placeholder="Votre message" value="Bonjour"/> <button>Envoyer</button></form>
+<pre id="out"></pre>
+<script>
+const f=document.getElementById('f'); const out=document.getElementById('out'); const msg=document.getElementById('msg');
+f.onsubmit=async(e)=>{e.preventDefault(); out.textContent='...';
+  const r=await fetch('/api/agents/echo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:msg.value||'Hello'})});
+  out.textContent = await r.text();
+};
+</script>
