@@ -1,33 +1,34 @@
-export const config = { runtime: 'nodejs' };
+export const config = { runtime: "nodejs" }
+import { readJson, gatewayUrl } from "../_utils"
+import { pipeline } from "node:stream"
+import { promisify } from "node:util"
+const pump = promisify(pipeline)
 
-const GATEWAY = process.env.GATEWAY_URL ?? "https://agent-gateway-112329442315.europe-west1.run.app";
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST' })
+  try {
+    const body = await readJson(req)
+    const upstream = await fetch(`${gatewayUrl()}/agents/gemini`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body)
+    })
 
-type In = { prompt?: string; imageUrl?: string; model?: string; stream?: boolean; speak?: boolean };
+    const ctype = upstream.headers.get('content-type') || ''
+    res.setHeader('Cache-Control','no-store')
 
-export default async function handler(req: Request): Promise<Response> {
-  if (req.method !== "POST") {
-    return new Response('{"error":"Use POST"}', { status:405, headers:{'content-type':'application/json'}});
-  }
-  const { prompt, imageUrl, model, stream, speak } = await req.json().catch(() => ({} as In));
+    // Si le gateway renvoie du flux (texte ou audio), on passe-à-travers
+    if (upstream.body && (ctype.includes('stream') || ctype.startsWith('text/') || ctype.startsWith('audio/'))) {
+      res.setHeader('Content-Type', ctype || 'text/plain; charset=utf-8')
+      // @ts-ignore
+      await pump(upstream.body as any, res)
+      return
+    }
 
-  // Proxy vers la gateway (SSE si stream=true)
-  const url = new URL("/agents/gemini", GATEWAY);
-  if (stream) url.searchParams.set("stream", "1");
-  if (speak)  url.searchParams.set("speak", "1");
-
-  const gw = await fetch(String(url), {
-    method: "POST",
-    headers: { "content-type": "application/json", "accept": stream ? "text/event-stream" : "application/json" },
-    body: JSON.stringify({ prompt, imageUrl, model }),
-  });
-
-  if (stream) {
-    const hdrs = new Headers(gw.headers);
-    hdrs.set("cache-control", "no-store");
-    hdrs.set("content-type", "text/event-stream; charset=utf-8");
-    return new Response(gw.body, { status: gw.status, headers: hdrs });
-  } else {
-    const body = await gw.text();
-    return new Response(body, { status: gw.status, headers: { "content-type": gw.headers.get("content-type") ?? "application/json" } });
+    // Sinon, on renvoie le payload tel quel (JSON)
+    const buf = Buffer.from(await upstream.arrayBuffer())
+    res.status(upstream.status).send(buf)
+  } catch (e:any) {
+    res.status(500).json({ error: e?.message || 'gemini failed' })
   }
 }
