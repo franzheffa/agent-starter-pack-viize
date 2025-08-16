@@ -1,12 +1,11 @@
-export const config = { runtime: "nodejs" }
-import { gatewayUrl } from "./_utils"
-export default async function handler(req: any, res: any) {
+import { runtime, dynamic, preferredRegion, gw, passThrough } from './_utils';
+export { runtime, dynamic, preferredRegion };
+
+export default async function handler(_req: Request): Promise<Response> {
   try {
-    const r = await fetch(`${gatewayUrl()}/health`)
-    const json = await r.json().catch(()=>({}))
-    res.setHeader('Cache-Control','no-store')
-    res.status(200).json({ ok: true, gateway: json })
+    const up = await fetch(`${gw()}/health`, { cache: 'no-store' });
+    return passThrough(up);
   } catch (e:any) {
-    res.status(200).json({ ok: false, error: e?.message })
+    return new Response(`Gateway injoignable: ${e?.message||e}`, { status: 502 });
   }
 }

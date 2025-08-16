@@ -1,125 +1,104 @@
 <!doctype html>
 <html lang="fr">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Console IA (stream + voix)</title>
-<link rel="stylesheet" href="/assets/brand.css" />
+<link rel="stylesheet" href="/assets/brand.css"/>
 <style>
-main{max-width:980px;margin:64px auto;padding:0 16px}
-.badge{display:inline-flex;align-items:center;gap:.5rem;background:#12220f;border:1px solid #1f3d19;border-radius:999px;color:#a6ff96;padding:.35rem .7rem;font-size:.9rem}
-.badge:before{content:"";width:8px;height:8px;border-radius:999px;background:#18e35d;display:inline-block}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
-.row{display:flex;gap:10px}
-.row input[type="text"]{flex:1}
-label.cb{display:flex;align-items:center;gap:.5rem;color:var(--sub)}
-button{background:var(--gold);color:#000;border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer}
-pre{white-space:pre-wrap;background:#0c0c0f;border:1px solid #1f1f25;border-radius:12px;padding:14px;min-height:120px}
-small.muted{color:var(--sub)}
+  body{background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,Segoe UI,Roboto,Ubuntu}
+  .wrap{max-width:960px;margin:40px auto;padding:0 16px}
+  .badge{display:inline-block;background:#143d22;color:#b3f5c1;border:1px solid #215a34;border-radius:999px;padding:6px 10px;font-size:13px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px}
+  input[type=text]{width:100%;background:#111;border:1px solid #2a2a2a;color:#fff;border-radius:12px;padding:10px 12px;outline:none}
+  button{background:var(--gold);color:#1a1205;border:0;border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
+  .row{display:flex;gap:12px;align-items:center}
+  .out{white-space:pre-wrap;background:#0e0e10;border:1px solid #222;border-radius:12px;padding:12px;min-height:120px}
+  .hint{color:var(--sub);font-size:13px;margin-top:8px}
 </style>
-</head>
-<body style="background:var(--bg);color:#fff">
-<main>
-  <div id="gw-badge" class="badge" style="display:none">Gateway & API proxy actifs</div>
-  <h1 style="font-size:42px;line-height:1.1;margin:.6em 0 .2em">Console IA (stream + voix)</h1>
+<div class="wrap">
+  <div id="health" class="badge">Gateway & API proxy : …</div>
+  <h1>Console IA (stream + voix)</h1>
   <p>Testez l’agent <b>Gemini 2.5</b> en streaming. Cochez <i>Parler</i> pour générer l’audio (TTS) côté gateway.</p>
-
-  <div class="card" style="margin-top:18px">
-    <div class="row" style="margin-bottom:10px">
-      <input id="prompt" type="text" placeholder="Posez une question…" />
+  <div class="card">
+    <div class="row" style="gap:8px">
+      <input id="prompt" type="text" placeholder="Posez une question…">
     </div>
-    <div class="row" style="margin-bottom:14px">
-      <input id="img" type="text" placeholder="https://exemple/image.jpg (optionnel)" />
-      <label class="cb"><input id="speak" type="checkbox" /> Parler</label>
+    <div class="row" style="gap:8px;margin-top:10px">
+      <input id="image" type="text" placeholder="https://exemple/image.jpg (optionnel)">
+      <label class="row" style="gap:8px"><input id="speak" type="checkbox"> Parler</label>
       <button id="go">Générer</button>
     </div>
-    <pre id="out"></pre>
-    <small class="muted">Astuce : essayez “explique la superposition des calques en vision par ordinateur”.</small>
+    <div id="out" class="out" style="margin-top:12px"></div>
+    <div class="hint">Astuce : essayez « explique la superposition des calques en vision par ordinateur ».</div>
+    <audio id="audio" controls style="display:none;margin-top:10px"></audio>
   </div>
-
-  <h2 style="margin-top:40px">Docs API</h2>
-  <div class="card">
-    <p><b>Health</b> : <code>GET /api/health</code></p>
-    <p><b>Echo</b> : <code>POST /api/agents/echo</code> <small class="muted">{ "text": "allo" }</small></p>
-    <p><b>Gemini</b> : <code>POST /api/agents/gemini</code> <small class="muted">{ "prompt": "haiku", "imageUrl": "…", "speak": false }</small></p>
-    <p><b>Voix</b> : <code>GET /api/voice?text=Bonjour</code> → MP3</p>
-  </div>
-</main>
-
+</div>
 <script>
-const out = document.getElementById('out');
-const btn = document.getElementById('go');
-const speak = document.getElementById('speak');
+(async function(){
+  // Santé proxy
+  try {
+    const r = await fetch('/api/health', {cache:'no-store'});
+    const ok = r.ok;
+    document.getElementById('health').textContent = ok ? '● Gateway & API proxy actifs' : '○ Gateway indisponible';
+    document.getElementById('health').style.background = ok ? '#143d22' : '#402';
+  } catch { document.getElementById('health').textContent = '○ Gateway indisponible'; }
 
-// Montrer l'état gateway
-fetch('/api/health',{cache:'no-store'}).then(r=>r.json()).then(j=>{
-  if(j && j.ok!==false) document.getElementById('gw-badge').style.display='inline-flex';
-}).catch(()=>{});
+  const out = document.getElementById('out');
+  const audio = document.getElementById('audio');
+  const btn = document.getElementById('go');
 
-// TTS helper
-async function playTTS(text){
-  const r = await fetch('/api/voice?text='+encodeURIComponent(text));
-  if(!r.ok) throw new Error('TTS failed');
-  const blob = await r.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.play();
-}
+  btn.onclick = async () => {
+    out.textContent = '';
+    audio.style.display='none'; audio.pause(); audio.removeAttribute('src');
+    const prompt = (document.getElementById('prompt')).value.trim();
+    const imageUrl = (document.getElementById('image')).value.trim();
+    const speak = (document.getElementById('speak')).checked;
 
-// Lecture streaming (text/event-stream, text/plain, jsonl…)
-async function streamToPre(resp){
-  const ctype = (resp.headers.get('content-type')||'').toLowerCase();
-  // Si JSON “classique”
-  if(ctype.includes('application/json')){
-    const j = await resp.json();
-    out.textContent = JSON.stringify(j,null,2);
-    return typeof j.reply==='string' ? j.reply : (j.output || JSON.stringify(j));
-  }
+    try {
+      const resp = await fetch('/api/agents/gemini', {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body: JSON.stringify({ prompt, imageUrl, speak })
+      });
 
-  // Sinon lecture progressive
-  const decoder = new TextDecoder();
-  const reader = resp.body.getReader();
-  let acc = '';
-  out.textContent = '';
-  while(true){
-    const {value, done} = await reader.read();
-    if(done) break;
-    const chunk = decoder.decode(value, {stream:true});
-    acc += chunk;
-    out.textContent += chunk;
-    out.scrollTop = out.scrollHeight;
-  }
-  return acc.trim();
-}
+      if (!resp.ok) {
+        out.textContent = await resp.text();
+        return;
+      }
 
-btn.addEventListener('click', async ()=>{
-  const prompt = document.getElementById('prompt').value.trim();
-  const imageUrl = document.getElementById('img').value.trim();
-  if(!prompt){ out.textContent = '⛔ Saisis une question.'; return; }
+      const ct = resp.headers.get('content-type') || '';
 
-  out.textContent = '…';
-  btn.disabled = true;
+      // Audio (si la gateway renvoie directement un MP3)
+      if (ct.includes('audio/')) {
+        const blob = await resp.blob();
+        audio.src = URL.createObjectURL(blob);
+        audio.style.display='block';
+        out.textContent = 'Audio généré.';
+        return;
+      }
 
-  try{
-    const body = { prompt, ...(imageUrl?{imageUrl}:{}), speak: !!speak.checked };
-    const resp = await fetch('/api/agents/gemini', {
-      method: 'POST',
-      headers: { 'content-type':'application/json' },
-      body: JSON.stringify(body)
-    });
-    if(!resp.body){ // pas de stream
-      const text = await resp.text();
-      out.textContent = text;
-      return;
+      // Streaming texte
+      if (resp.body && (ct.startsWith('text/') || ct.includes('stream'))) {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        while(true){
+          const {value, done} = await reader.read();
+          if (done) break;
+          out.textContent += decoder.decode(value, {stream:true});
+        }
+        return;
+      }
+
+      // JSON normal
+      const data = await resp.json();
+      if (speak && data && data.audioUrl) {
+        audio.src = data.audioUrl; audio.style.display='block';
+      }
+      out.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      out.textContent = 'Internal Server Error';
+      console.error(e);
     }
-    const finalText = await streamToPre(resp);
-    if(speak.checked && finalText) { playTTS(finalText).catch(()=>{}); }
-  }catch(e){
-    out.textContent = 'A server error has occurred\n\n' + (e?.message||e);
-  }finally{
-    btn.disabled = false;
-  }
-});
+  };
+})();
 </script>
-</body>
-</html>

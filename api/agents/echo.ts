@@ -1,19 +1,17 @@
-export const config = { runtime: "nodejs" }
-import { readJson, gatewayUrl } from "../_utils"
-export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST' })
+import { runtime, dynamic, preferredRegion, gw, passThrough, methodGuard } from '../_utils';
+export { runtime, dynamic, preferredRegion };
+
+export default async function handler(req: Request): Promise<Response> {
+  const guard = await methodGuard(req, ['POST']); if (guard) return guard;
   try {
-    const body = await readJson(req)
-    const upstream = await fetch(`${gatewayUrl()}/agents/echo`, {
+    const body = await req.text();
+    const up = await fetch(`${gw()}/agents/echo`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body)
-    })
-    res.status(upstream.status)
-    upstream.headers.forEach((v,k)=>res.setHeader(k,v))
-    const buf = Buffer.from(await upstream.arrayBuffer())
-    res.send(buf)
+      headers: { 'content-type':'application/json' },
+      body: body || '{}',
+    });
+    return passThrough(up);
   } catch (e:any) {
-    res.status(500).json({ error: e?.message || 'echo failed' })
+    return new Response(`Erreur proxy echo: ${e?.message||e}`, { status: 502 });
   }
 }
