@@ -1,62 +1,125 @@
-<!doctype html><html><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Buttertech • Console</title>
-<link rel="stylesheet" href="/assets/brand.css"/>
-</head><body>
-<div class="container">
-  <div class="badge">✅ Gateway & API proxy actifs</div>
-  <h1>Console IA (stream + voix)</h1>
-  <p class="lead">Testez l’agent <b>Gemini 2.5</b> en streaming. Option “Parler” génère l’audio côté gateway.</p>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Console IA (stream + voix)</title>
+<link rel="stylesheet" href="/assets/brand.css" />
+<style>
+main{max-width:980px;margin:64px auto;padding:0 16px}
+.badge{display:inline-flex;align-items:center;gap:.5rem;background:#12220f;border:1px solid #1f3d19;border-radius:999px;color:#a6ff96;padding:.35rem .7rem;font-size:.9rem}
+.badge:before{content:"";width:8px;height:8px;border-radius:999px;background:#18e35d;display:inline-block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.row{display:flex;gap:10px}
+.row input[type="text"]{flex:1}
+label.cb{display:flex;align-items:center;gap:.5rem;color:var(--sub)}
+button{background:var(--gold);color:#000;border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer}
+pre{white-space:pre-wrap;background:#0c0c0f;border:1px solid #1f1f25;border-radius:12px;padding:14px;min-height:120px}
+small.muted{color:var(--sub)}
+</style>
+</head>
+<body style="background:var(--bg);color:#fff">
+<main>
+  <div id="gw-badge" class="badge" style="display:none">Gateway & API proxy actifs</div>
+  <h1 style="font-size:42px;line-height:1.1;margin:.6em 0 .2em">Console IA (stream + voix)</h1>
+  <p>Testez l’agent <b>Gemini 2.5</b> en streaming. Cochez <i>Parler</i> pour générer l’audio (TTS) côté gateway.</p>
 
-  <div class="card">
-    <form id="f" onsubmit="return false;">
-      <input id="q" class="input" placeholder="Posez une question…" style="width:100%;margin-bottom:10px"/>
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
-        <input id="img" class="input" placeholder="https://exemple/image.jpg (optionnel)" style="flex:1"/>
-        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="speak"> Parler</label>
-        <button id="go" class="btn gold">Générer</button>
-      </div>
-    </form>
-    <pre id="out" class="stream mono"></pre>
-    <audio id="player" controls style="margin-top:10px;display:none"></audio>
+  <div class="card" style="margin-top:18px">
+    <div class="row" style="margin-bottom:10px">
+      <input id="prompt" type="text" placeholder="Posez une question…" />
+    </div>
+    <div class="row" style="margin-bottom:14px">
+      <input id="img" type="text" placeholder="https://exemple/image.jpg (optionnel)" />
+      <label class="cb"><input id="speak" type="checkbox" /> Parler</label>
+      <button id="go">Générer</button>
+    </div>
+    <pre id="out"></pre>
+    <small class="muted">Astuce : essayez “explique la superposition des calques en vision par ordinateur”.</small>
   </div>
-</div>
+
+  <h2 style="margin-top:40px">Docs API</h2>
+  <div class="card">
+    <p><b>Health</b> : <code>GET /api/health</code></p>
+    <p><b>Echo</b> : <code>POST /api/agents/echo</code> <small class="muted">{ "text": "allo" }</small></p>
+    <p><b>Gemini</b> : <code>POST /api/agents/gemini</code> <small class="muted">{ "prompt": "haiku", "imageUrl": "…", "speak": false }</small></p>
+    <p><b>Voix</b> : <code>GET /api/voice?text=Bonjour</code> → MP3</p>
+  </div>
+</main>
 
 <script>
 const out = document.getElementById('out');
 const btn = document.getElementById('go');
-const q   = document.getElementById('q');
-const img = document.getElementById('img');
 const speak = document.getElementById('speak');
-const player = document.getElementById('player');
 
-async function streamChat() {
-  out.textContent = ''; player.style.display='none'; player.removeAttribute('src');
-  btn.disabled = true;
-  const r = await fetch('/api/agents/gemini?stream=1', {
-    method:'POST',
-    headers:{'content-type':'application/json'},
-    body: JSON.stringify({ prompt: q.value || 'Bonjour', imageUrl: img.value || null })
-  });
-  if (!r.body) { out.textContent = await r.text(); btn.disabled=false; return; }
-  const reader = r.body.getReader();
-  const decoder = new TextDecoder();
-  while (true) {
-    const {value, done} = await reader.read();
-    if (done) break;
-    out.textContent += decoder.decode(value, {stream:true});
-  }
-  // Option "Parler"
-  if (speak.checked) {
-    const rr = await fetch('/api/voice/tts', {method:'POST', body: out.textContent});
-    const blob = await rr.blob();
-    player.src = URL.createObjectURL(blob);
-    player.style.display='block';
-    player.play().catch(()=>{});
-  }
-  btn.disabled = false;
+// Montrer l'état gateway
+fetch('/api/health',{cache:'no-store'}).then(r=>r.json()).then(j=>{
+  if(j && j.ok!==false) document.getElementById('gw-badge').style.display='inline-flex';
+}).catch(()=>{});
+
+// TTS helper
+async function playTTS(text){
+  const r = await fetch('/api/voice?text='+encodeURIComponent(text));
+  if(!r.ok) throw new Error('TTS failed');
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  audio.play();
 }
-document.getElementById('f').addEventListener('submit', streamChat);
-btn.addEventListener('click', streamChat);
+
+// Lecture streaming (text/event-stream, text/plain, jsonl…)
+async function streamToPre(resp){
+  const ctype = (resp.headers.get('content-type')||'').toLowerCase();
+  // Si JSON “classique”
+  if(ctype.includes('application/json')){
+    const j = await resp.json();
+    out.textContent = JSON.stringify(j,null,2);
+    return typeof j.reply==='string' ? j.reply : (j.output || JSON.stringify(j));
+  }
+
+  // Sinon lecture progressive
+  const decoder = new TextDecoder();
+  const reader = resp.body.getReader();
+  let acc = '';
+  out.textContent = '';
+  while(true){
+    const {value, done} = await reader.read();
+    if(done) break;
+    const chunk = decoder.decode(value, {stream:true});
+    acc += chunk;
+    out.textContent += chunk;
+    out.scrollTop = out.scrollHeight;
+  }
+  return acc.trim();
+}
+
+btn.addEventListener('click', async ()=>{
+  const prompt = document.getElementById('prompt').value.trim();
+  const imageUrl = document.getElementById('img').value.trim();
+  if(!prompt){ out.textContent = '⛔ Saisis une question.'; return; }
+
+  out.textContent = '…';
+  btn.disabled = true;
+
+  try{
+    const body = { prompt, ...(imageUrl?{imageUrl}:{}), speak: !!speak.checked };
+    const resp = await fetch('/api/agents/gemini', {
+      method: 'POST',
+      headers: { 'content-type':'application/json' },
+      body: JSON.stringify(body)
+    });
+    if(!resp.body){ // pas de stream
+      const text = await resp.text();
+      out.textContent = text;
+      return;
+    }
+    const finalText = await streamToPre(resp);
+    if(speak.checked && finalText) { playTTS(finalText).catch(()=>{}); }
+  }catch(e){
+    out.textContent = 'A server error has occurred\n\n' + (e?.message||e);
+  }finally{
+    btn.disabled = false;
+  }
+});
 </script>
-</body></html>
+</body>
+</html>
