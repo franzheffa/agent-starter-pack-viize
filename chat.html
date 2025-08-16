@@ -1,0 +1,33 @@
+<!doctype html><html lang="fr"><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chat streaming (Gemini)</title>
+<link rel="stylesheet" href="/assets/brand.css"/>
+<div class="container">
+  <h1>Chat (stream)</h1>
+  <p class="lead">Streaming SSE via /api/agents/gemini. Cochez "Parler" pour générer l'audio côté gateway.</p>
+  <input id="q" placeholder="Posez une question…" style="width:100%;padding:10px;border-radius:12px;border:1px solid #333;background:#121216;color:#fff;margin:8px 0"/>
+  <label style="display:flex;gap:8px;align-items:center"><input id="speak" type="checkbox"/> Parler</label>
+  <button id="go" class="btn gold">Générer</button>
+  <pre id="out" class="card" style="margin-top:12px;white-space:pre-wrap"></pre>
+</div>
+<script>
+const out = document.getElementById('out');
+document.getElementById('go').onclick = async () => {
+  out.textContent = '';
+  const speak = (document.getElementById('speak')).checked;
+  const res = await fetch('/api/agents/gemini', {
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body: JSON.stringify({ prompt: document.getElementById('q').value, stream:true, speak })
+  });
+  if (res.headers.get('content-type')?.includes('text/event-stream')) {
+    const reader = res.body.getReader(); const dec = new TextDecoder();
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      out.textContent += dec.decode(value);
+    }
+  } else {
+    out.textContent = await res.text();
+  }
+};
+</script>
