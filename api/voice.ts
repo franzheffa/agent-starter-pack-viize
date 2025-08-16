@@ -1,4 +1,4 @@
-export const config = { runtime: 'nodejs22.x' };
+export const config = { runtime: 'nodejs' };
 export default async function handler(req:any,res:any){
   const text=(req.query.text||'').toString();
   const r = await fetch(process.env.GATEWAY_URL + '/voice?text='+encodeURIComponent(text));
