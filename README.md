@@ -133,7 +133,7 @@ Thank you for your contributions!
 
 ## Disclaimer.
 
-This repository is for demonstrative purposes only and is not an officially supported Google product .
+This repository is for demonstrative purposes only and is not an officially supported Google product.
 
 ## Terms of Service
 
