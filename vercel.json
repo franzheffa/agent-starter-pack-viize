@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/gateway/(.*)", "destination": "https://agent-gateway-112329442315.europe-west1.run.app/$1" }
+    {
+      "source": "/api/(.*)",
+      "destination": "https://agent-gateway-112329442315.europe-west1.run.app/api/$1"
+    }
   ]
 }
