@@ -1,11 +1,10 @@
 {
+  "name": "agent-starter-pack-viize",
+  "version": "1.0.0",
   "type": "module",
+  "engines": { "node": ">=20" },
   "dependencies": {
-    "google-auth-library": "^9.15.1"
+    "@vercel/node": "^3.0.0"
   },
-  "devDependencies": {
-    "@types/node": "^20.11.5",
-    "@vercel/node": "^3.0.0",
-    "typescript": "^5.0.0"
-  }
+  "devDependencies": {}
 }
