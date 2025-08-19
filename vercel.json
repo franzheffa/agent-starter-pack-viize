@@ -1,7 +1,10 @@
 {
   "version": 2,
+  "env": {
+    "NEXT_PUBLIC_API_BASE_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app",
+    "NEXT_PUBLIC_VIIZE_AGENT_GEMINI_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app"
+  },
   "functions": {
-    "api/**/*.js": { "runtime": "nodejs22.x" },
-    "api/**/*.ts": { "runtime": "nodejs22.x" }
+    "api/*.cjs": { "runtime": "nodejs22.x" }
   }
 }
