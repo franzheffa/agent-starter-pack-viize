@@ -5,7 +5,9 @@
     "NEXT_PUBLIC_VIIZE_AGENT_GEMINI_URL": "https://agent-gateway-fqsvjamshq-ew.a.run.app"
   },
   "functions": {
-    "api/*.cjs": { "runtime": "nodejs20" },
-    "api/*.js":  { "runtime": "nodejs20" }
-  }
+    "api/*.cjs": { "runtime": "nodejs20" }
+  },
+  "routes": [
+    { "src": "/api/agent", "dest": "/api/agent.cjs" }
+  ]
 }

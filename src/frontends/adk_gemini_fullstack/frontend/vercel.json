@@ -6,5 +6,8 @@
   },
   "functions": {
     "api/*.cjs": { "runtime": "nodejs20" }
-  }
+  },
+  "routes": [
+    { "src": "/api/agent", "dest": "/api/agent.cjs" }
+  ]
 }

@@ -18,8 +18,7 @@ button{margin-top:.75rem;padding:.75rem 1rem;border:0;border-radius:12px;backgro
 </div>
 <script>
 async function health(){
-  try{
-    const r=await fetch('/api/agent'); const j=await r.json();
+  try{ const r=await fetch('/api/agent'); const j=await r.json();
     document.getElementById('meta').innerHTML = r.ok ? '<span class="ok">Connecté</span> → '+(j.base||'') : '<span class="err">Hors ligne</span>';
   }catch{ document.getElementById('meta').innerHTML='<span class="err">Hors ligne</span>'; }
 }
