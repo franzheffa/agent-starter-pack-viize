@@ -1,69 +1,35 @@
-<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Buttertech — passerelle d'agents IA</title>
-<link rel="stylesheet" href="/assets/brand.css"/>
-<link rel="icon" href="/favicon.ico"/>
-</head><body>
-<div class="container">
-  <nav class="nav">
-    <div class="logo"><img src="https://files.catbox.moe/6v7x0x.png" onerror="this.style.display='none'"><strong>B U T T E R T E C H</strong></div>
-    <div class="badges">
-      <span class="badge">✅ En ligne · Front Vercel + Gateway Cloud Run</span>
-      <a class="tag" href="/api/health">/api/health</a>
-      <a class="tag" href="/gateway/health">/gateway/health</a>
-    </div>
-  </nav>
-
-  <section class="hero card">
-    <div>
-      <h1>Buttertech – passerelle d’agents IA pour l’entreprise</h1>
-      <p class="lead">Plateforme d’agents IA spécialisés (recherche, RAG, automation) orchestrés derrière un <b>API Gateway</b> sur Google Cloud Run, avec un front léger sur Vercel.</p>
-      <div style="display:flex;gap:10px;margin-top:10px">
-        <a class="btn gold" href="/console.html">Voir la console multimodale</a>
-        <a class="btn" href="/docs.html">Docs API</a>
-      </div>
-      <div style="margin-top:16px" class="badges">
-        <span class="tag">Gemini 2.5</span><span class="tag">Cloud Run</span><span class="tag">Vercel Functions</span><span class="tag">Observabilité</span>
-      </div>
-    </div>
-    <div class="card" style="background:radial-gradient(120px 120px at 30% 30%, #2a241c 0%, transparent 55%);min-height:220px">
-      <h2>Produits (actuel)</h2>
-      <ul>
-        <li>Agent Gateway (Cloud Run) — routes <span class="kbd">/agents/echo</span>, <span class="kbd">/agents/gemini</span>, <span class="kbd">/voice</span></li>
-        <li>Agent “Echo” — test chaîne réseau</li>
-        <li>Agent “Gemini” — génération texte/image (Gemini 2.5 Flash)</li>
-        <li>Voix — Google Cloud Text-to-Speech (MP3)</li>
-      </ul>
-      <div class="hr"></div>
-      <div class="badges">
-        <span class="tag">Google Cloud Partner</span>
-        <span class="tag">NVIDIA Inception</span>
-        <span class="tag">Apple Vision Pro (R&D)</span>
-      </div>
-    </div>
-  </section>
-
-  <div class="grid" style="margin-top:18px">
-    <div class="card"><h2>Problèmes résolus</h2>
-      <ul>
-        <li>Isolation par agent ⇒ moins d’effets de bord</li>
-        <li>Time-to-prod court ⇒ build & deploy 1-commande</li>
-        <li>Surface API stable pour intégrations</li>
-      </ul>
-    </div>
-    <div class="card"><h2>Clients cibles</h2>
-      <ul>
-        <li>PME/ETI pilotant des agents IA sûrs et audités</li>
-        <li>Équipes data/innovation ⇒ prototyper → produire</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:18px">
-    <h2>Contact</h2>
-    <p>Franz Heffa — <a href="mailto:franz@buttertech.io">franz@buttertech.io</a> — <a href="/console.html">démos</a> · <a href="/docs.html">/api/health</a></p>
-  </div>
-
-  <div class="footer">© Buttertech — construit sur Google Cloud Run & Vercel.</div>
+<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Buttertech • Agent Gateway</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:2rem;background:#0b0b0b;color:#fafafa}
+.card{max-width:800px;margin:0 auto;padding:1.5rem;border-radius:16px;background:#161616;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+h1{font-size:1.5rem;margin:0 0 1rem}
+textarea{width:100%;min-height:110px;padding:.75rem;border-radius:12px;border:1px solid #2a2a2a;background:#0f0f0f;color:#fff}
+button{margin-top:.75rem;padding:.75rem 1rem;border:0;border-radius:12px;background:#4f46e5;color:#fff;font-weight:600;cursor:pointer}
+.out{white-space:pre-wrap;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:12px;padding:.75rem;margin-top:1rem;min-height:70px}
+.ok{color:#22c55e;font-weight:600}.err{color:#ef4444;font-weight:600}.meta{font-size:.85rem;opacity:.8;margin-bottom:1rem}
+</style>
+<div class="card">
+  <h1>Buttertech – Agent (Echo)</h1>
+  <div class="meta" id="meta">Vérification connexion…</div>
+  <textarea id="msg">Bonjour</textarea>
+  <button id="send">Envoyer</button>
+  <div class="out" id="out"></div>
 </div>
-</body></html>
+<script>
+async function health(){
+  try{
+    const r=await fetch('/api/agent'); const j=await r.json();
+    document.getElementById('meta').innerHTML = r.ok ? '<span class="ok">Connecté</span> → '+(j.base||'') : '<span class="err">Hors ligne</span>';
+  }catch{ document.getElementById('meta').innerHTML='<span class="err">Hors ligne</span>'; }
+}
+document.getElementById('send').onclick=async()=>{
+  const out=document.getElementById('out'); out.textContent='…';
+  try{
+    const r=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:document.getElementById('msg').value})});
+    const j=await r.json(); out.textContent=JSON.stringify(j,null,2);
+  }catch(e){ out.textContent='Erreur: '+e.message; }
+};
+health();
+</script>
