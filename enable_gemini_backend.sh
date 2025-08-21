@@ -17,7 +17,7 @@ try:
     from vertexai.generative_models import GenerativeModel, Part
     PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("PROJECT_ID")
     LOCATION   = os.environ.get("VERTEX_LOCATION","europe-west1")
-    MODEL_NAME = os.environ.get("GENMODEL_TEXT","gemini-1.5-flash")
+    MODEL_NAME = os.environ.get("GENMODEL_TEXT","gemini-2.5-flash")
     if PROJECT_ID:
         vertexai.init(project=PROJECT_ID, location=LOCATION)
         GEMINI = GenerativeModel(MODEL_NAME)
