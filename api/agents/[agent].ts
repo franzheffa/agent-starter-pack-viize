@@ -18,22 +18,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const method = (req.method || "POST").toUpperCase();
-    const headers: Record<string,string> = {};
-    const ct = req.headers["content-type"];
-    if (typeof ct === "string") headers["content-type"] = ct;
+    const headers: Record<string, string> = {};
 
-    const init: RequestInit = { method, headers } as any;
-    if (!["GET","HEAD"].includes(method)) {
-      init.body = typeof req.body === "string" ? req.body : JSON.stringify(req.body ?? {});
+    // On ne copie que l'en-tête content-type, c'est plus sûr.
+    const ct = req.headers["content-type"];
+    if (typeof ct === "string") {
+      headers["Content-Type"] = ct;
     }
 
-    const r = await fetch(url, init);
+    let body: BodyInit | null = null;
+
+    // On ne traite le corps que si la méthode le permet et s'il existe.
+    if (!["GET", "HEAD"].includes(method) && req.body) {
+        // Si le corps est un objet (comme un JSON), on le transforme en chaîne de caractères
+        // et on s'assure que l'en-tête est correct.
+        if (typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+            body = JSON.stringify(req.body);
+            headers['Content-Type'] = 'application/json';
+        } else {
+            // Sinon (si c'est déjà du texte ou autre), on le passe directement.
+            body = req.body;
+        }
+    }
+
+    // On envoie la requête avec les bons paramètres.
+    const r = await fetch(url, { method, headers, body });
+
     const rct = r.headers.get("content-type") || "";
     const buf = Buffer.from(await r.arrayBuffer());
     res.status(r.status);
     if (rct) res.setHeader("content-type", rct);
     res.send(buf);
-  } catch (e:any) {
+  } catch (e: any) {
     res.status(502).json({ error: "Gateway fetch failed", message: e?.message ?? String(e) });
   }
 }
