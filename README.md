@@ -25,7 +25,7 @@ It accelerates development by providing a holistic, production-ready solution, a
 
 ---
  
-## ⚡ Get Started in 1 Minute
+## ⚡ Get Started in 1 Minute.
 
 Ready to build your AI agent? Simply run this command:
 
