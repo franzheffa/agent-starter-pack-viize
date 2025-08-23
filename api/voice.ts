@@ -1,4 +1,4 @@
-import { runtime, dynamic, preferredRegion, gw, passThrough, methodGuard } from './_utils';
+import { runtime, dynamic, preferredRegion, gw, passThrough, methodGuard } from './_utils.js';
 export { runtime, dynamic, preferredRegion };
 
 export default async function handler(req: Request): Promise<Response> {
