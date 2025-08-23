@@ -15,6 +15,11 @@
       "dest": "gateway/server.py"
     }
   ],
+  "functions": {
+    "gateway/server.py": {
+      "excludeFiles": "{adk/**,api/**,app/**,bin/**,docs/**,lib/**,node_modules/**,public/**,rag/**,src/**,tests/**,.backup/**,.cloudbuild/**,.github/**}"
+    }
+  },
   "crons": [
     {
       "path": "/api/health",
