@@ -6,10 +6,8 @@
   "functions": {
     "api/**/*.ts": { "runtime": "nodejs22.x" },
     "api/**/*.js": { "runtime": "nodejs22.x" }
-  ],
+  },
   "crons": [
     { "path": "/api/health", "schedule": "0 0 * * *" }
   ]
 }
-
-  
