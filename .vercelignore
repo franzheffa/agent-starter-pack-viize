@@ -1,2 +1,26 @@
-api/
+# Ignorer les environnements virtuels et caches Python
 lib/
+adk/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Ignorer les dossiers Node.js et de build
+api/
+app/
+node_modules/
+.next/
+dist/
+build/
+
+# Ignorer les autres dossiers non pertinents pour ce déploiement
+.backup/
+.cloudbuild/
+.github/
+agents/
+bin/
+docs/
+rag/
+src/
+tests/
