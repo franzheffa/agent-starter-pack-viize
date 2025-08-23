@@ -1,28 +1,20 @@
 {
+  "version": 2,
   "builds": [
     {
-      "src": "gateway/server.py",
+      "src": "vercel_deploy/server.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/gateway/(.*)",
-      "dest": "https://agent-gateway-112329442315.europe-west1.run.app/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "gateway/server.py"
+      "dest": "vercel_deploy/server.py"
     }
   ],
-  "functions": {
-    "gateway/server.py": {
-      "excludeFiles": "{adk/**,api/**,app/**,bin/**,docs/**,lib/**,node_modules/**,public/**,rag/**,src/**,tests/**,.backup/**,.cloudbuild/**,.github/**}"
-    }
-  },
   "crons": [
     {
-      "path": "/api/health",
+      "path": "/health",
       "schedule": "0 0 * * *"
     }
   ]
