@@ -2,9 +2,13 @@
   "name": "agent-starter-pack-viize",
   "version": "1.0.0",
   "type": "module",
-  "engines": { "node": ">=20" },
-  "dependencies": {
-    "@vercel/node": "^3.0.0"
+  "engines": {
+    "node": ">=20"
   },
-  "devDependencies": {}
+  "dependencies": {
+    "@vercel/node": "^2.3.0"
+  },
+  "devDependencies": {
+    "nitropack": "^2.12.4"
+  }
 }
