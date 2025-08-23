@@ -1,7 +1,7 @@
 {
   "builds": [
     {
-      "src": "server.py",
+      "src": "gateway/server.py",
       "use": "@vercel/python"
     }
   ],
@@ -12,7 +12,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "server.py"
+      "dest": "gateway/server.py"
     }
   ],
   "crons": [
