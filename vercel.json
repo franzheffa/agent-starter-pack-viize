@@ -1,12 +1,13 @@
 {
-  "version": 2,
   "rewrites": [
-    { "source": "/gateway/(.*)", "destination": "https://agent-gateway-112329442315.europe-west1.run.app/$1" }
+    {
+      "source": "/gateway/(.*)",
+      "destination": "https://agent-gateway-112329442315.europe-west1.run.app/$1"
+    }
   ],
   "functions": {
-    "api/**/*.ts": { "runtime": "nodejs22.x" },
-    "api/**/*.js": { "runtime": "nodejs22.x" }
-  },
+    "api/**": { "runtime": "nodejs22.x" }
+  ],
   "crons": [
     { "path": "/api/health", "schedule": "0 0 * * *" }
   ]
