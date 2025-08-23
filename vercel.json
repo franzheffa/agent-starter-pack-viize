@@ -1,8 +1,18 @@
 {
-  "rewrites": [
+  "builds": [
+    {
+      "src": "server.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
     {
       "source": "/gateway/(.*)",
       "destination": "https://agent-gateway-112329442315.europe-west1.run.app/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "server.py"
     }
   ],
   "crons": [
