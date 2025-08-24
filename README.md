@@ -11,7 +11,7 @@
     <img
       height="20"
       alt="Try in Firebase Studio"
-      src="https://cdn.firebasestudio.dev/btn/try_blue_20.svg">
+      src="https://cdn.firebasestudio.dev/btn/try_blue_20.svg"> .
   </picture>
 </a> [![Launch in Cloud Shell](https://img.shields.io/badge/Launch-in_Cloud_Shell-white)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Feliasecchig%2Fasp-open-in-cloud-shell&cloudshell_print=open-in-cs) ![Stars](https://img.shields.io/github/stars/GoogleCloudPlatform/agent-starter-pack?color=yellow)
 
