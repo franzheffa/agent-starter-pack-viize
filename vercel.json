@@ -12,6 +12,11 @@
       "dest": "vercel_deploy/server.py"
     }
   ],
+  "functions": {
+    "vercel_deploy/server.py": {
+      "excludeFiles": "{.backup/**,.cloudbuild/**,.github/**,adk/**,agents/**,api/**,app/**,bin/**,docs/**,lib/**,public/**,rag/**,src/**,tests/**,node_modules/**}"
+    }
+  },
   "crons": [
     {
       "path": "/health",
