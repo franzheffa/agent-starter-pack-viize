@@ -10,9 +10,15 @@
     "BACKEND": "https://agent-smith-heffa-112329442315.us-central1.run.app"
   },
   "crons": [
-    { "path": "/api/cron", "schedule": "*/10 * * * *" }
+    {
+      "path": "/api/cron",
+      "schedule": "*/10 * * * *"
+    }
   ],
   "rewrites": [
-    { "source": "/health", "destination": "$BACKEND/health" }
+    {
+      "source": "/health",
+      "destination": "$BACKEND/health"
+    }
   ]
 }
