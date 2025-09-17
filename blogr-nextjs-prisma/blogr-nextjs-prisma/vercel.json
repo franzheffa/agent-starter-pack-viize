@@ -1,18 +1,24 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
   "env": {
     "BACKEND": "https://agent-smith-heffa-112329442315.us-central1.run.app"
   },
   "crons": [
-    { "path": "/api/cron", "schedule": "*/10 * * * *" }
+    {
+      "path": "/api/cron",
+      "schedule": "*/10 * * * *"
+    }
   ],
-  "functions": {
-    "api/**": { "runtime": "nodejs22.x" }
-  },
   "rewrites": [
-    { "source": "/health", "destination": "$BACKEND/health" }
-  ],
-  "headers": [
-    { "source": "/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+    {
+      "source": "/health",
+      "destination": "$BACKEND/health"
+    }
   ]
 }
