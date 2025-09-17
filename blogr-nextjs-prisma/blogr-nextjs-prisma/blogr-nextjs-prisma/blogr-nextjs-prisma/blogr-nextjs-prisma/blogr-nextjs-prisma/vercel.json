@@ -1,26 +1,18 @@
 {
-  "version": 3,
-  "framework": "nextjs",
-
-  // Forçons Node 20 pour la compatibilité avec Next 12 + Prisma
-  "functions": {
-    "api/**/*.js": { "runtime": "nodejs20.x" },
-    "api/**/*.ts": { "runtime": "nodejs20.x" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "BACKEND": "https://agent-smith-heffa-112329442315.us-central1.run.app"
   },
-
-  // Utilise ton script existant qui génère Prisma avant build
-  "buildCommand": "npm run vercel-build",
-  "installCommand": "npm ci",
-
-  "headers": [
-    { "source": "/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
-  ],
-  "routes": [
-    { "src": "/health", "dest": "https://agent-smith-heffa-112329442315.us-central1.run.app/health" },
-    { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/index.html" }
-  ],
   "crons": [
     { "path": "/api/cron", "schedule": "*/10 * * * *" }
+  ],
+  "rewrites": [
+    { "source": "/health", "destination": "$BACKEND/health" }
   ]
 }
