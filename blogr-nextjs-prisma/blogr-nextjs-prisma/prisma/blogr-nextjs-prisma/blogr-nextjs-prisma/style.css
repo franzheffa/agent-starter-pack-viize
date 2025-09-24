@@ -1,0 +1,7 @@
+:root{--bg:#0b0b0d;--fg:#e8e8ea;--card:#15161a;--link:#9bd}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,Segoe UI,Arial,sans-serif}
+nav{max-width:900px;margin:20px auto;display:flex;gap:.75rem;flex-wrap:wrap;padding:0 16px}
+a{color:var(--link);text-decoration:none;background:var(--card);padding:.5rem .75rem;border-radius:.6rem}
+a:hover{filter:brightness(1.15)}
+main{max-width:900px;margin:24px auto;padding:0 16px}
+code{background:var(--card);padding:.2rem .4rem;border-radius:.4rem}

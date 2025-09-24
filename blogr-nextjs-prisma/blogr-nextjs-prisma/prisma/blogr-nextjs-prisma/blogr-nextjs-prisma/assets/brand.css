@@ -1,0 +1,8 @@
+:root{--bg:#0b0f17;--fg:#e8eefc;--t:#8ab4f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+a{color:var(--t)}.wrap{max-width:920px;margin:40px auto;padding:0 16px}
+h1{font-size:2rem;margin:.5rem 0}h2{font-size:1.4rem;margin:1.2rem 0 .6rem}
+.card{background:#0f1725;border:1px solid #17243a;border-radius:12px;padding:16px;margin:14px 0}
+ul{padding-left:20px}
+footer{opacity:.7;margin:40px 0 20px}
+nav a{margin-right:14px}

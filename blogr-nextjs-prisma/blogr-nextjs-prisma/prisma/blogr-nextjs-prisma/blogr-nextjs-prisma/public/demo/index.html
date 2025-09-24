@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Démo — Agent Gemini (multimodal + voix)</title>
+<link rel="stylesheet" href="/brand.css"/>
+</head><body>
+<div class="container">
+  <div class="nav"><a href="/">← Retour</a></div>
+  <h1>Démo — Agent “Smith-Heffa” (Gemini 2.x)</h1>
+  <p class="lead">Entrez un prompt (option : URL d’image). Le résultat peut être lu à voix haute.</p>
+
+  <div class="card">
+    <label>Prompt</label>
+    <textarea id="prompt" rows="3" class="input">Écris un haïku sur le code.</textarea>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <input id="img" class="input" placeholder="https://exemple/image.jpg (optionnel)"/>
+      <button id="speak" class="btn">🔊 Lire</button>
+      <button id="rec" class="btn">🎙️ Dictée</button>
+    </div>
+    <div style="margin-top:10px">
+      <button id="run" class="btn gold">Générer</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h2>Résultat</h2>
+    <pre id="out">—</pre>
+  </div>
+</div>
+
+<script>
+async function ttsPlay(text){
+  const r=await fetch('/api/voice/tts',{method:'POST',headers:{'content-type':'application/json'},
+    body:JSON.stringify({text,languageCode:'fr-FR',voice:'fr-FR-Neural2-A'})});
+  const j=await r.json(); if(!j.ok){alert('TTS error');return}
+  const a=new Audio('data:audio/mp3;base64,'+j.audio_b64); a.play();
+}
+async function run(){
+  const prompt = document.getElementById('prompt').value.trim();
+  const imageUrl = document.getElementById('img').value.trim();
+  const res = await fetch('/api/agents/gemini',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt,imageUrl})});
+  const j = await res.json();
+  document.getElementById('out').textContent = JSON.stringify(j,null,2);
+}
+document.getElementById('run').onclick = run;
+document.getElementById('speak').onclick = async ()=> {
+  const t = document.getElementById('out').textContent || document.getElementById('prompt').value;
+  try{const obj=JSON.parse(t); await ttsPlay(obj.text||t);}catch{await ttsPlay(t)}
+};
+document.getElementById('rec').onclick = () => {
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){alert('Web Speech API indisponible');return;}
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR(); rec.lang='fr-FR'; rec.interimResults=false; rec.maxAlternatives=1;
+  rec.onresult = e => { document.getElementById('prompt').value = e.results[0][0].transcript; };
+  rec.start();
+};
+</script>
+</body></html>

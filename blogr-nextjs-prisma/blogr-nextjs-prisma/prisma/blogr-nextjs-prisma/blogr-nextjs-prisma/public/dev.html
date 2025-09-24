@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Buttertech • Démo</title>
+<style>body{font:16px/1.5 system-ui;margin:20px;max-width:900px}input,button{font:inherit}pre{background:#111;color:#eee;padding:10px;border-radius:8px;overflow:auto;border:1px solid #333}</style>
+</head><body>
+<h1>✅ Démo technique (Front connecté au Gateway)</h1>
+<p>Vérif rapide : <a href="/api/health">/api/health</a> doit renvoyer <code>{ "ok": true }</code>.</p>
+
+<section style="border-top:1px solid #ddd;padding-top:12px;margin-top:18px">
+  <h2>Tester l’agent d’écho via proxy</h2>
+  <form id="echoForm">
+    <input id="echoText" placeholder="Bonjour" style="width:70%"/>
+    <button>Envoyer</button>
+  </form>
+  <pre id="echoOut"></pre>
+</section>
+
+<section style="border-top:1px solid #ddd;padding-top:12px;margin-top:18px">
+  <h2>Tester Gemini (texte + image URL optionnelle)</h2>
+  <form id="gemForm">
+    <input id="gemPrompt" placeholder="Dis juste *pong*." style="width:70%"/>
+    <input id="gemImg" placeholder="https://exemple/image.jpg (optionnel)" style="width:70%;display:block;margin-top:8px"/>
+    <button>Générer</button>
+  </form>
+  <pre id="gemOut"></pre>
+</section>
+
+<script>
+async function postJSON(url, data){
+  const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});
+  let t = await r.text(); try{t = JSON.parse(t)}catch(_){}
+  return t;
+}
+document.getElementById('echoForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const msg = document.getElementById('echoText').value;
+  const out = await postJSON('/api/agents/echo',{text:msg});
+  document.getElementById('echoOut').textContent = JSON.stringify(out,null,2);
+});
+document.getElementById('gemForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const prompt = document.getElementById('gemPrompt').value;
+  const imageUrl = document.getElementById('gemImg').value || undefined;
+  const out = await postJSON('/api/agents/gemini',{prompt, imageUrl});
+  document.getElementById('gemOut').textContent = JSON.stringify(out,null,2);
+});
+</script>
+</body></html>

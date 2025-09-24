@@ -1,0 +1,9 @@
+.adk/
+.venv/
+venv/
+env/
+lib/
+bin/
+node_modules/
+.git
+.DS_Store

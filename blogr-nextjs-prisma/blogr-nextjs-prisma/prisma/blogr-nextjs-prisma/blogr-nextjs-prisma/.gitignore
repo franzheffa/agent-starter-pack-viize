@@ -1,0 +1,21 @@
+# Python venv & cache
+.adk/
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+pyvenv.cfg
+# si ton venv a créé lib/ et bin/ dans le repo, ignore-les
+lib/
+bin/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS / IDE
+.DS_Store
+.env
+.env.*
+.vercel

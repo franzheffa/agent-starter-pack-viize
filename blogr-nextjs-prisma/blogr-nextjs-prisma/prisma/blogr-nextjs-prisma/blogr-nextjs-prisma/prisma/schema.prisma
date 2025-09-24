@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza195V3ZvbDVnay1seF9zcFl2Yzh5RzAiLCJhcGlfa2V5IjoiMDFLNE4wSjVTOFBRMzhGS1FWMjJSQ0cwRkIiLCJ0ZW5hbnRfaWQiOiIwNGRhOGI3ZTgyMWZjMTVlOTExZmM2NTliNWM4NTM4MzU2YzI3Yzc0YjgyZjhkYjEwMzRiNmU0ZmM0NGI0MzRiIiwiaW50ZXJuYWxfc2VjcmV0IjoiZWUwZmQyMjMtMmZlNi00MDhmLWJiMmMtNGFhN2NkZjlhNmUyIn0.NLNOjJvtaGH-O9SghkKYPYVDt0A0E0jYtmeOzIby7Ew
+")
+  directUrl  = env("postgres://04da8b7e821fc15e911fc659b5c8538356c27c74b82f8db1034b6e4fc44b434b:sk_yWvol5gk-lx_spYvc8yG0@db.prisma.io:5432/postgres?sslmode=require
+")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String?  @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  posts     Post[]
+
+  @@map("users")
+}

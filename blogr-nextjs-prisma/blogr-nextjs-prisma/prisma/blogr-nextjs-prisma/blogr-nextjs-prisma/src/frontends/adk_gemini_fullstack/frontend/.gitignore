@@ -1,0 +1,7 @@
+
+# keep api & public for Vercel
+!api/
+!api/**
+!public/
+!public/**
+!vercel.json

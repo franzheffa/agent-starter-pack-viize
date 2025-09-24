@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Console IA (stream + voix)</title>
+<link rel="stylesheet" href="/assets/brand.css"/>
+<style>
+  body{background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,Segoe UI,Roboto,Ubuntu}
+  .wrap{max-width:960px;margin:40px auto;padding:0 16px}
+  .badge{display:inline-block;background:#143d22;color:#b3f5c1;border:1px solid #215a34;border-radius:999px;padding:6px 10px;font-size:13px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px}
+  input[type=text]{width:100%;background:#111;border:1px solid #2a2a2a;color:#fff;border-radius:12px;padding:10px 12px;outline:none}
+  button{background:var(--gold);color:#1a1205;border:0;border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
+  .row{display:flex;gap:12px;align-items:center}
+  .out{white-space:pre-wrap;background:#0e0e10;border:1px solid #222;border-radius:12px;padding:12px;min-height:120px}
+  .hint{color:var(--sub);font-size:13px;margin-top:8px}
+</style>
+<div class="wrap">
+  <div id="health" class="badge">Gateway & API proxy : …</div>
+  <h1>Console IA (stream + voix)</h1>
+  <p>Testez l’agent <b>Gemini 2.5</b> en streaming. Cochez <i>Parler</i> pour générer l’audio (TTS) côté gateway.</p>
+  <div class="card">
+    <div class="row" style="gap:8px">
+      <input id="prompt" type="text" placeholder="Posez une question…">
+    </div>
+    <div class="row" style="gap:8px;margin-top:10px">
+      <input id="image" type="text" placeholder="https://exemple/image.jpg (optionnel)">
+      <label class="row" style="gap:8px"><input id="speak" type="checkbox"> Parler</label>
+      <button id="go">Générer</button>
+    </div>
+    <div id="out" class="out" style="margin-top:12px"></div>
+    <div class="hint">Astuce : essayez « explique la superposition des calques en vision par ordinateur ».</div>
+    <audio id="audio" controls style="display:none;margin-top:10px"></audio>
+  </div>
+</div>
+<script>
+(async function(){
+  // Santé proxy
+  try {
+    const r = await fetch('/api/health', {cache:'no-store'});
+    const ok = r.ok;
+    document.getElementById('health').textContent = ok ? '● Gateway & API proxy actifs' : '○ Gateway indisponible';
+    document.getElementById('health').style.background = ok ? '#143d22' : '#402';
+  } catch { document.getElementById('health').textContent = '○ Gateway indisponible'; }
+
+  const out = document.getElementById('out');
+  const audio = document.getElementById('audio');
+  const btn = document.getElementById('go');
+
+  btn.onclick = async () => {
+    out.textContent = '';
+    audio.style.display='none'; audio.pause(); audio.removeAttribute('src');
+    const prompt = (document.getElementById('prompt')).value.trim();
+    const imageUrl = (document.getElementById('image')).value.trim();
+    const speak = (document.getElementById('speak')).checked;
+
+    try {
+      const resp = await fetch('/api/agents/gemini', {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body: JSON.stringify({ prompt, imageUrl, speak })
+      });
+
+      if (!resp.ok) {
+        out.textContent = await resp.text();
+        return;
+      }
+
+      const ct = resp.headers.get('content-type') || '';
+
+      // Audio (si la gateway renvoie directement un MP3)
+      if (ct.includes('audio/')) {
+        const blob = await resp.blob();
+        audio.src = URL.createObjectURL(blob);
+        audio.style.display='block';
+        out.textContent = 'Audio généré.';
+        return;
+      }
+
+      // Streaming texte
+      if (resp.body && (ct.startsWith('text/') || ct.includes('stream'))) {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        while(true){
+          const {value, done} = await reader.read();
+          if (done) break;
+          out.textContent += decoder.decode(value, {stream:true});
+        }
+        return;
+      }
+
+      // JSON normal
+      const data = await resp.json();
+      if (speak && data && data.audioUrl) {
+        audio.src = data.audioUrl; audio.style.display='block';
+      }
+      out.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      out.textContent = 'Internal Server Error';
+      console.error(e);
+    }
+  };
+})();
+</script>
