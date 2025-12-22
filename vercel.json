@@ -1,19 +1,8 @@
 {
-  "env": {
-    "BACKEND": "https://agent-smith-heffa-112329442315.us-central1.run.app"
-  },
-  "crons": [
-    { "path": "/api/cron", "schedule": "*/10 * * * *" }
-  ],
   "rewrites": [
-    { "source": "/api/agent", "destination": "/api/agent.cjs" },
-    { "source": "/api/voice/tts", "destination": "/api/voice/tts.cjs" },
-    { "source": "/api/health", "destination": "/api/health.cjs" },
-    { "source": "/api/cron", "destination": "/api/cron.cjs" },
-    { "source": "/health", "destination": "$BACKEND/health" },
-    { "source": "/(.*)", "destination": "/app/index.html" }
-  ],
-  "headers": [
-    { "source": "/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+    {
+      "source": "/(.*)",
+      "destination": "/blogr-nextjs-prisma/blogr-nextjs-prisma/$1"
+    }
   ]
 }
