@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/blogr-nextjs-prisma/blogr-nextjs-prisma/$1"
-    }
+    { "source": "/api/auth/:path*", "destination": "/blogr-nextjs-prisma/blogr-nextjs-prisma/api/auth/:path*" },
+    { "source": "/api/:path*", "destination": "/blogr-nextjs-prisma/blogr-nextjs-prisma/api/:path*" },
+    { "source": "/(.*)", "destination": "/blogr-nextjs-prisma/blogr-nextjs-prisma/$1" }
   ]
 }
