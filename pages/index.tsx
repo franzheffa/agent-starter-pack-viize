@@ -23,7 +23,7 @@ type Props = {
 
 const Blog: React.FC<Props> = (props) => {
   return (
-    <Layout>
+    <Layout><head><title>Buttertech | Multimodal Agentic AI</title></head><head><title>Buttertech | Multimodal Agentic AI</title></head>
       <div className="page">
         <h1>Public Feed</h1>
         <main>
