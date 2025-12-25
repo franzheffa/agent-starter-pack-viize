@@ -1,41 +1,59 @@
-import React from 'react';
-import { GetStaticProps } from 'next';
-import Layout from '../components/Layout';
-import Post, { PostProps } from '../components/Post';
-import prisma from './api/prisma';
+import React from "react"
+import { GetStaticProps } from "next"
+import Layout from "../components/Layout"
+import Post, { PostProps } from "../components/Post"
+import prisma from './api/prisma'
 
 export const getStaticProps: GetStaticProps = async () => {
   const feed = await prisma.post.findMany({
     where: { published: true },
     include: {
-      author: true,
+      author: {
+        select: { name: true },
+      },
     },
   });
   return {
     props: { feed },
     revalidate: 10,
   };
-};
+}
 
 type Props = {
-  feed: PostProps[];
-};
+  feed: PostProps[]
+}
 
 const Blog: React.FC<Props> = (props) => {
   return (
-    <Layout><head><title>Buttertech | Multimodal Agentic AI</title></head><head><title>Buttertech | Multimodal Agentic AI</title></head>
+    <Layout>
       <div className="page">
         <h1>Public Feed</h1>
         <main>
-          {props.feed.map((post) => (
-            <div key={post.id} className="post">
-              <Post post={post} />
-            </div>
-          ))}
+          {props.feed.length > 0 ? (
+            props.feed.map((post) => (
+              <div key={post.id} className="post">
+                <Post post={post} />
+              </div>
+            ))
+          ) : (
+            <p>Welcome to Buttertech. The multimodal agent-smith-heffa is ready. No public posts yet.</p>
+          )}
         </main>
       </div>
+      <style jsx>{`
+        .post {
+          background: white;
+          transition: box-shadow 0.1s ease-in;
+        }
+        .post:hover {
+          box-shadow: 1px 1px 3px #aaa;
+        }
+        .post + .post {
+          margin-top: 2rem;
+        }
+      `}</style>
     </Layout>
-  );
-};
+  )
+}
 
-export default Blog;
+export default Blog
