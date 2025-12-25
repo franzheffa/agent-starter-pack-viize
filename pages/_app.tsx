@@ -1,10 +1,16 @@
-import { SessionProvider } from 'next-auth/react';
-import type { AppProps } from 'next/app';
-import './../components/styles.css'; // Chemin corrigé pour la nouvelle structure
-export default function App({ Component, pageProps }: AppProps) {
+import Head from 'next/head';
+import '../globals.css';
+
+function App({ Component, pageProps }) {
   return (
-    <SessionProvider session={(pageProps as any).session}>
+    <>
+      <Head>
+        <title>Buttertech | Agent Smith-Heffa Multimodal AI</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        <meta name="description" content="Montreal-based Deep Tech startup for autonomous surveillance." />
+      </Head>
       <Component {...pageProps} />
-    </SessionProvider>
+    </>
   );
 }
+export default App;
