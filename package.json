@@ -12,7 +12,7 @@
   "dependencies": {
     "@next-auth/prisma-adapter": "latest",
     "@prisma/client": "4.16.2",
-    "google-auth-library": "latest",
+    "google-auth-library": "^10.6.1",
     "next": "12.2.5",
     "next-auth": "latest",
     "react": "latest",
