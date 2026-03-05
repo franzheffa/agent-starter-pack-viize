@@ -1,25 +1,10 @@
-# Ignorer les environnements virtuels et caches Python
-lib/
-adk/
-__pycache__/
-*.pyc
-.venv/
-venv/
-
-# Ignorer les dossiers Node.js et de build
-app/
-node_modules/
-.next/
-dist/
+# Ignorer Flutter et Dart pour le build Vercel
+ios/
+android/
 build/
-
-# Ignorer les autres dossiers non pertinents pour ce déploiement
-.backup/
-.cloudbuild/
-.github/
-agents/
-bin/
-docs/
-rag/
-src/
-tests/
+lib/
+test/
+*.dart
+.dart_tool/
+pubspec.yaml
+pubspec.lock
