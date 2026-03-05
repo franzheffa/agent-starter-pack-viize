@@ -1,4 +1,3 @@
-// Agent Smith: Bypass types pour compatibilité OS locale
 export default async function handler(req: any, res: any) {
   const FALLBACK = "https://agent-smith-heffa-112329442315.us-central1.run.app";
   const { agent } = req.query;

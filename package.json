@@ -16,7 +16,8 @@
     "next": "12.2.5",
     "next-auth": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "react-markdown": "^8.0.7"
   },
   "devDependencies": {
     "@types/node": "latest",
