@@ -1,9 +1,57 @@
-<!doctype html><html lang="fr"><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Contact • Buttertech</title>
-<link rel="stylesheet" href="/assets/brand.css"><body><div class="wrap">
-<nav><a href="/">Accueil</a> <a href="/produits/index.html">Produits</a> <a href="/equipe/index.html">Équipe</a> <a href="/docs.html">Docs</a></nav>
-<h1>Contact</h1>
-<p>Email : <a href="mailto:hello@buttertech.io">hello@buttertech.io</a></p>
-<p>Support : <a href="mailto:support@buttertech.io">support@buttertech.io</a></p>
-<p>Healthcheck : <a href="/health">/health</a></p>
-</div></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contact — Buttertech</title>
+  <meta name="description" content="Contactez Buttertech (Agent Smith-Heffa Runtime). Déploiement, pilotes, partenariats, intégrations." />
+  <style>
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b0b0f;color:#f4f5fb}
+    a{color:#fff} .wrap{max-width:900px;margin:0 auto;padding:28px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .card{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);border-radius:16px;padding:16px;margin-top:16px}
+    .muted{color:#b8bbd0}
+    input,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#07080c;color:#fff}
+    label{display:block;margin:10px 0 6px}
+    button{margin-top:12px;padding:10px 14px;border-radius:12px;border:0;background:#fff;color:#0b0b0f;font-weight:800;cursor:pointer}
+    footer{margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);color:#b8bbd0;font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div style="font-weight:900;font-size:18px">Buttertech</div>
+        <div class="muted" style="font-size:13px">Contact — Agent Smith-Heffa Runtime</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="/">Accueil</a>
+        <a href="/equipe/">Équipe</a>
+        <a href="/blogr-nextjs-prisma/">App</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="muted" style="margin-top:0">
+        Pour un pilote, une intégration (paiements/vision/LLM), ou une démo du runtime Smith-Heffa, envoie un message.
+      </p>
+
+      <form onsubmit="event.preventDefault(); alert('OK — branche ce formulaire à une API Next.js ensuite.');">
+        <label>Nom</label>
+        <input name="name" placeholder="Votre nom" />
+
+        <label>Email</label>
+        <input name="email" type="email" placeholder="vous@domaine.com" />
+
+        <label>Message</label>
+        <textarea name="msg" rows="6" placeholder="Décris ton besoin (pilote, intégration, partenariat, etc.)"></textarea>
+
+        <button type="submit">Envoyer</button>
+      </form>
+    </div>
+
+    <footer>© <span id="y"></span> Buttertech</footer>
+  </div>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

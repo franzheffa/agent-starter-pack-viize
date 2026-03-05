@@ -1,38 +1,110 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="fr">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="/">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="flutter_agentsmith_web">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>flutter_agentsmith_web</title>
-  <link rel="manifest" href="manifest.json">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Buttertech — Agent Smith-Heffa Runtime</title>
+  <meta name="description" content="Buttertech construit Agent Smith-Heffa : un runtime d’agents IA pour déployer plus vite en production (Cloud Run + Vercel + Prisma)." />
+  <meta name="robots" content="index,follow" />
+  <meta property="og:title" content="Buttertech — Agent Smith-Heffa Runtime" />
+  <meta property="og:description" content="Runtime d’agents IA : orchestration, observabilité, intégrations (paiements, vision, LLM) — prêt production." />
+  <meta property="og:type" content="website" />
+  <style>
+    :root{--bg:#0b0b0f;--card:#11121a;--text:#f4f5fb;--muted:#b8bbd0;--line:rgba(255,255,255,.08);--btn:#ffffff;--btnText:#0b0b0f;}
+    *{box-sizing:border-box} body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial; background:radial-gradient(1200px 700px at 20% 10%, rgba(120,140,255,.18), transparent 60%), var(--bg); color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:28px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:14px;height:14px;border-radius:4px;background:#fff}
+    .name{font-weight:900;letter-spacing:-.02em}
+    .tag{font-size:12px;color:var(--muted);margin-top:2px}
+    .nav{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+    .pill{border:1px solid var(--line);padding:9px 12px;border-radius:999px;font-size:13px;color:var(--muted)}
+    .cta{background:var(--btn);color:var(--btnText);padding:10px 14px;border-radius:12px;font-weight:800}
+    .hero{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;margin-top:22px}
+    .h1{font-size:44px;line-height:1.05;letter-spacing:-.04em;margin:12px 0}
+    .sub{color:var(--muted);max-width:62ch;line-height:1.6}
+    .card{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:18px;padding:16px}
+    .kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .kpi{border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:150px}
+    .kpi b{display:block}
+    pre{margin:0;background:#07080c;border:1px solid var(--line);border-radius:14px;padding:12px;overflow:auto;color:#e7e8f8;font-size:12px;line-height:1.5}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+    .ft{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:16px;padding:14px}
+    .ft h3{margin:0 0 6px;font-size:14px}
+    .ft p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+    footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px;flex-wrap:wrap}
+    @media(max-width:920px){.hero{grid-template-columns:1fr}.h1{font-size:36px}.grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="name">Buttertech</div>
+          <div class="tag">Agent Smith-Heffa Runtime</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="pill" href="/contact/">Contact</a>
+        <a class="pill" href="/equipe/">Équipe</a>
+        <a class="pill" href="https://github.com/franzheffa" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="cta" href="/blogr-nextjs-prisma/">Ouvrir l’app</a>
+      </nav>
+    </header>
+
+    <main class="hero">
+      <section>
+        <div class="pill" style="display:inline-block">Production-ready • Multimodal • Cloud Run</div>
+        <h1 class="h1">Déployer des agents IA comme un runtime, pas comme une démo.</h1>
+        <p class="sub">
+          Buttertech construit Agent Smith-Heffa : une couche d’orchestration pour agents (LLM, vision, paiements, données)
+          avec des frontières propres (API), observabilité, et chemins de déploiement Vercel + Google Cloud Run.
+        </p>
+
+        <div class="kpis">
+          <div class="kpi"><b>API runtime</b><span style="color:var(--muted)">Smith-Heffa au centre</span></div>
+          <div class="kpi"><b>Scalabilité</b><span style="color:var(--muted)">Cloud Run autoscale</span></div>
+          <div class="kpi"><b>DX</b><span style="color:var(--muted)">SDK + templates</span></div>
+        </div>
+
+        <div class="grid">
+          <div class="ft"><h3>Orchestration</h3><p>Un seul point d’entrée : Smith-Heffa orchestre le reste en arrière-plan.</p></div>
+          <div class="ft"><h3>Observabilité</h3><p>Traces, métriques et logs structurés pour passer du MVP à la prod.</p></div>
+          <div class="ft"><h3>Integrations</h3><p>Paiements, vision, LLM, stockage — branchés comme des adaptateurs.</p></div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div style="font-weight:900;margin-bottom:10px">Quickstart</div>
+        <pre>
+curl -s https://buttertech.io/api/health
+
+# App (MVP)
+https://buttertech.io/blogr-nextjs-prisma/
+
+# Contact
+https://buttertech.io/contact/
+        </pre>
+        <div style="margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5">
+          Ce site est la vitrine. L’app / MVP reste stable sur Vercel/Next.js.
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <div>© <span id="y"></span> Buttertech</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="/contact/">Contact</a>
+        <a href="/equipe/">Équipe</a>
+        <a href="/blogr-nextjs-prisma/">App</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 </body>
 </html>

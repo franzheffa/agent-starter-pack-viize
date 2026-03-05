@@ -1,4 +1,55 @@
-<!doctype html><meta charset="utf-8"><title>Buttertech – Équipe</title>
-<link rel="stylesheet" href="/style.css"><body>
-<nav><a href="/">Accueil</a><a href="/docs.html">Docs</a><a href="/dev.html">Dev</a><a href="/produits/">Produits</a></nav>
-<main><h1>Équipe</h1><p>Buttertech — builders d’agents IA industrialisés.</p></main>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Équipe — Buttertech</title>
+  <meta name="description" content="Équipe Buttertech. Produit : Agent Smith-Heffa Runtime (orchestration d’agents IA)." />
+  <style>
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b0b0f;color:#f4f5fb}
+    a{color:#fff} .wrap{max-width:900px;margin:0 auto;padding:28px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .card{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);border-radius:16px;padding:16px;margin-top:16px}
+    .muted{color:#b8bbd0}
+    .row{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:start}
+    .avatar{width:120px;height:120px;border-radius:16px;background:rgba(255,255,255,.08)}
+    footer{margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);color:#b8bbd0;font-size:13px}
+    @media(max-width:720px){.row{grid-template-columns:1fr}.avatar{width:88px;height:88px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div style="font-weight:900;font-size:18px">Buttertech</div>
+        <div class="muted" style="font-size:13px">Équipe — Agent Smith-Heffa Runtime</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="/">Accueil</a>
+        <a href="/contact/">Contact</a>
+        <a href="/blogr-nextjs-prisma/">App</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="avatar" aria-hidden="true"></div>
+        <div>
+          <div style="font-weight:900;font-size:16px">Franz Heffa</div>
+          <div class="muted" style="margin-top:4px">Fondateur — Buttertech</div>
+          <p class="muted" style="line-height:1.6">
+            Construit Agent Smith-Heffa : runtime d’orchestration pour agents IA (LLM, vision, paiements, données),
+            orienté production (Cloud Run, Vercel, Prisma) et cas d’usage smart-infrastructure.
+          </p>
+          <p class="muted" style="margin:0">
+            GitHub : <a href="https://github.com/franzheffa" target="_blank" rel="noreferrer">github.com/franzheffa</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <footer>© <span id="y"></span> Buttertech</footer>
+  </div>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
